@@ -1,4 +1,4 @@
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZetraHub/Strongest-Battlegrounds-/refs/heads/main/sem%20t%C3%ADtulo.txt"))()
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
@@ -33,38 +33,43 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
--- No Stun
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
 
-local noStunEnabled = false -- No Stun disabled by default
+local invisibleEnabled = false -- Invisibility disabled by default
 
--- Function to prevent stun
-local function onStun(damage)
-    -- Return true to prevent the stun effect
-    return noStunEnabled
+-- Function to toggle invisibility
+local function setInvisibility(enabled)
+    if Character then
+        -- Make the character invisible or visible
+        for _, part in pairs(Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = enabled and 1 or 0 -- 1 for invisible, 0 for visible
+            end
+        end
+        -- Set humanoid transparency
+        if Character:FindFirstChild("Humanoid") then
+            Character.Humanoid.LocalTransparencyModifier = enabled and 1 or 0
+        end
+    end
 end
 
--- Monitor stun effects on the Humanoid
-Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-    if noStunEnabled and Humanoid.Health < Humanoid.MaxHealth then
-        -- Prevent any stun effects
-        onStun(Humanoid.Health)
-    end
-end)
-
--- Toggle to enable/disable No Stun
-local ToggleNoStun = Tabs.Others:AddToggle("No Stun", {
-    Title = "Enable No Stun",
+-- Monitor the toggle change
+local ToggleInvisibility = Tabs.Others:AddToggle("Invisibility", {
+    Title = "Enable Invisibility",
     Default = false -- Disabled by default
 })
 
--- Connects the toggle to enable/disable functionality
-ToggleNoStun:OnChanged(function()
-    noStunEnabled = ToggleNoStun.Value
+ToggleInvisibility:OnChanged(function()
+    invisibleEnabled = ToggleInvisibility.Value
+    setInvisibility(invisibleEnabled) -- Update character visibility
+end)
+
+-- Connect the event to update the character when it is re-added
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+    Character = newCharacter
+    setInvisibility(invisibleEnabled) -- Apply invisibility if enabled
 end)
 
 -- Anti Afk
