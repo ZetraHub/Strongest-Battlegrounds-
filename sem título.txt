@@ -33,71 +33,6 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local enemyDefeatedCount = 0 -- Inicializa o contador de inimigos derrotados
-local autoCounterEnabled = false -- Começa com o toggle desativado
-local counterDisplay -- Variável para armazenar o display do contador
-
--- Função para atualizar o display do contador na tela
-local function updateCounterDisplay()
-    if counterDisplay then
-        counterDisplay.Text = "Enemies Defeated: " .. enemyDefeatedCount
-    end
-end
-
--- Função chamada quando um inimigo é derrotado
-local function onEnemyDefeated(enemy)
-    if autoCounterEnabled and enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") then
-        enemyDefeatedCount = enemyDefeatedCount + 1 -- Incrementa o contador
-        updateCounterDisplay() -- Atualiza o display
-    end
-end
-
--- Cria um texto para exibir o contador na tela
-local function createCounterDisplay()
-    counterDisplay = Instance.new("TextLabel")
-    counterDisplay.Size = UDim2.new(0, 300, 0, 50)
-    counterDisplay.Position = UDim2.new(0.5, -150, 0, 10) -- Centraliza no topo da tela
-    counterDisplay.Text = "Enemies Defeated: 0"
-    counterDisplay.TextColor3 = Color3.new(1, 1, 1) -- Branco
-    counterDisplay.BackgroundTransparency = 1 -- Transparente
-    counterDisplay.Parent = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("ScreenGui") -- Adiciona ao GUI do jogador
-end
-
--- Toggle na aba Others para Auto Counter
-local ToggleAutoCounter = Tabs.Others:AddToggle("Auto Counter Toggle", {
-    Title = "Auto Counter",
-    Default = false -- Começa com desativado
-})
-
-ToggleAutoCounter:OnChanged(function()
-    autoCounterEnabled = ToggleAutoCounter.Value
-    if autoCounterEnabled then
-        enemyDefeatedCount = 0 -- Reseta o contador quando ativado
-        updateCounterDisplay() -- Atualiza o display
-    else
-        enemyDefeatedCount = 0 -- Reseta o contador quando desativado
-        updateCounterDisplay() -- Atualiza o display
-    end
-end)
-
--- Função para conectar o evento de derrota de inimigos
-local function connectEnemyDefeatEvent()
-    local enemyDefeatEvent = game.ReplicatedStorage:FindFirstChild("EnemyDefeated") -- Substitua pelo nome do seu evento
-    if enemyDefeatEvent then
-        enemyDefeatEvent.OnServerEvent:Connect(onEnemyDefeated) -- Conecta ao evento de derrota
-    else
-        warn("EnemyDefeated event not found!")
-    end
-end
-
--- Cria o display do contador
-createCounterDisplay()
-
--- Conecta o evento de derrota de inimigos ao iniciar o script
-connectEnemyDefeatEvent()
-
 -- Toggle na aba Player para Walk Speed
 local ToggleWalkSpeed = Tabs.Player:AddToggle("Walk Speed Toggle", {
     Title = "Walk Speed",
@@ -557,6 +492,88 @@ Tabs.Info:AddParagraph({
     Title = "Updates",
     Content = "- 10/10/2024"
 })
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local tracersEnabled = false -- Inicialmente desativado
+local tracers = {} -- Tabela para armazenar os tracers
+
+-- Função para criar um tracer para um jogador
+local function createTracer(player)
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local tracer = Instance.new("LineHandleAdornment")
+        tracer.Adornee = player.Character.HumanoidRootPart
+        tracer.Length = 100 -- Ajuste a distância do tracer
+        tracer.Color3 = Color3.fromRGB(0, 255, 0) -- Cor do tracer
+        tracer.Thickness = 1 -- Espessura do tracer
+        tracer.Parent = workspace
+        
+        tracers[player.UserId] = tracer
+
+        -- Atualiza o tracer se o jogador mudar de personagem
+        player.CharacterAdded:Connect(function(newCharacter)
+            tracer.Adornee = newCharacter:WaitForChild("HumanoidRootPart")
+        end)
+    end
+end
+
+-- Função para remover o tracer de um jogador
+local function removeTracer(player)
+    if tracers[player.UserId] then
+        tracers[player.UserId]:Destroy()
+        tracers[player.UserId] = nil
+    end
+end
+
+-- Função para ativar/desativar os tracers
+local function toggleTracers()
+    if tracersEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                createTracer(player)
+            end
+        end
+    else
+        for _, player in pairs(Players:GetPlayers()) do
+            removeTracer(player)
+        end
+    end
+end
+
+-- Toggle na aba Visuals para Tracers
+local ToggleTracers = Tabs.Visuals:AddToggle("Tracers Toggle", {
+    Title = "Tracers",
+    Default = false
+})
+
+ToggleTracers:OnChanged(function()
+    tracersEnabled = ToggleTracers.Value
+    toggleTracers()
+end)
+
+-- Adiciona tracers para jogadores já presentes
+for _, player in pairs(Players:GetPlayers()) do
+    if tracersEnabled and player ~= LocalPlayer then
+        createTracer(player)
+    end
+
+    player.CharacterAdded:Connect(function()
+        if tracersEnabled then
+            createTracer(player)
+        end
+    end)
+end
+
+-- Atualiza a lista de jogadores quando eles entram ou saem
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if tracersEnabled then
+            createTracer(player)
+        end
+    end)
+end)
+
+Players.PlayerRemoving:Connect(removeTracer)
     
 -- Addons:
 -- SaveManager (Allows you to have a configuration system)
