@@ -35,81 +35,56 @@ do
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local enemyDefeatedCount = 0 -- Inicializa o contador de inimigos derrotados
-local autoCounterEnabled = false -- Inicializa o toggle como desativado
-local counterDisplay -- Variável para armazenar o display do contador
+local enemyDefeatedCount = 0 -- Initialize enemy defeated counter
+local autoCounterEnabled = false -- Start with the toggle disabled
+local counterDisplay -- Variable to store the counter display
 
--- Função para atualizar a exibição do contador na tela
+-- Function to update the counter display on screen
 local function updateCounterDisplay()
     if counterDisplay then
-        counterDisplay.Text = "Inimigos Derrotados: " .. enemyDefeatedCount
+        counterDisplay.Text = "Enemies Defeated: " .. enemyDefeatedCount
     end
 end
 
--- Função chamada quando um inimigo é derrotado (após o clique M1)
+-- Function called when an enemy is defeated
 local function onEnemyDefeated(enemy)
     if autoCounterEnabled and enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") then
-        enemyDefeatedCount = enemyDefeatedCount + 1 -- Incrementa o contador
-        updateCounterDisplay() -- Atualiza a exibição
+        enemyDefeatedCount = enemyDefeatedCount + 1 -- Increment the counter
+        updateCounterDisplay() -- Update the display
     end
 end
 
--- Cria um texto para exibir o contador na tela
+-- Create a text label to display the counter on screen
 local function createCounterDisplay()
     counterDisplay = Instance.new("TextLabel")
     counterDisplay.Size = UDim2.new(0, 300, 0, 50)
-    counterDisplay.Position = UDim2.new(0.5, -150, 0, 10) -- Posiciona no centro superior da tela
-    counterDisplay.Text = "Inimigos Derrotados: 0"
-    counterDisplay.TextColor3 = Color3.new(1, 1, 1) -- Branco
-    counterDisplay.BackgroundTransparency = 1 -- Transparente
-    counterDisplay.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui -- Adicione isso ao GUI do jogador
+    counterDisplay.Position = UDim2.new(0.5, -150, 0, 10) -- Center top of the screen
+    counterDisplay.Text = "Enemies Defeated: 0"
+    counterDisplay.TextColor3 = Color3.new(1, 1, 1) -- White
+    counterDisplay.BackgroundTransparency = 1 -- Transparent
+    counterDisplay.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui -- Add this to the player's GUI
 end
 
--- Função para detectar cliques do mouse
-local function onMouseClick(target)
-    if target:IsA("Model") and target:FindFirstChild("Humanoid") then
-        onEnemyDefeated(target) -- Chama a função para contar o inimigo derrotado
-    end
-end
-
--- Toggle na aba Others para Auto Counter
+-- Toggle in the Others tab for Auto Counter
 local ToggleAutoCounter = Tabs.Others:AddToggle("Auto Counter Toggle", {
     Title = "Auto Counter",
-    Default = false -- Inicialmente desativado
+    Default = false -- Start with it disabled
 })
 
 ToggleAutoCounter:OnChanged(function()
     autoCounterEnabled = ToggleAutoCounter.Value
     if autoCounterEnabled then
-        enemyDefeatedCount = 0 -- Reinicia o contador ao ativar
-        updateCounterDisplay() -- Atualiza a exibição quando ativado
+        enemyDefeatedCount = 0 -- Reset the counter when activated
+        updateCounterDisplay() -- Update the display when activated
     end
 end)
 
--- Conectar a detecção de cliques do mouse
-local playerMouse = LocalPlayer:GetMouse()
-playerMouse.Button1Down:Connect(function()
-    if autoCounterEnabled then
-        local target = playerMouse.Target -- O alvo do mouse
-        onMouseClick(target) -- Verifica se o alvo é um inimigo
-    end
-end)
+-- Connect the function to enemy defeat event
+-- Replace this with the actual event used in your game to detect enemy defeat.
+game.ReplicatedStorage.EnemyDefeated.OnServerEvent:Connect(onEnemyDefeated) -- Example event
 
--- Cria a exibição do contador
+-- Create the counter display
 createCounterDisplay()
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local walkSpeedEnabled = true -- Inicialmente ativado
-local walkSpeed = 16 -- Velocidade de caminhada padrão
-
--- Função para ajustar a velocidade de caminhada
-local function adjustWalkSpeed()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        -- Aplica a velocidade correspondente
-        LocalPlayer.Character.Humanoid.WalkSpeed = walkSpeedEnabled and walkSpeed or 16 
-    end
-end
 
 -- Toggle na aba Player para Walk Speed
 local ToggleWalkSpeed = Tabs.Player:AddToggle("Walk Speed Toggle", {
