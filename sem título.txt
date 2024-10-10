@@ -34,6 +34,36 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Backpack = LocalPlayer:WaitForChild("Backpack")
+local autoEquipEnabled = false -- Inicialmente desativado
+
+-- Função para equipar todos os itens da mochila
+local function autoEquipTools()
+    while autoEquipEnabled do
+        for _, tool in pairs(Backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                tool.Parent = LocalPlayer.Character -- Move a Tool para o personagem para equipar
+            end
+        end
+        wait(1) -- Intervalo entre as verificações
+    end
+end
+
+-- Toggle na aba 'Auto Farm' para Auto Equip
+local ToggleAutoEquip = Tabs.AutoFarm:AddToggle("Auto Equip Toggle", {
+    Title = "Auto Equip",
+    Default = false
+})
+
+ToggleAutoEquip:OnChanged(function()
+    autoEquipEnabled = ToggleAutoEquip.Value
+    if autoEquipEnabled then
+        autoEquipTools()
+    end
+end)
+
 -- Auto Awaken
 
 local Players = game:GetService("Players")
@@ -740,7 +770,7 @@ Tabs.Info:AddParagraph({
 })
 
 Tabs.Skills:AddParagraph({
-    Title = "Auto Skills",
+    Title = "Auto Use Skills",
     Content = "Use skills automatically"
 })
 
