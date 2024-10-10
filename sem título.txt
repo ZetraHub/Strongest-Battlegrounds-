@@ -35,62 +35,67 @@ do
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local enemyDefeatedCount = 0 -- Initialize enemy defeated counter
-local autoCounterEnabled = false -- Start with the toggle disabled
-local counterDisplay -- Variable to store the counter display
+local enemyDefeatedCount = 0 -- Inicializa o contador de inimigos derrotados
+local autoCounterEnabled = false -- Começa com o toggle desativado
+local counterDisplay -- Variável para armazenar o display do contador
 
--- Function to update the counter display on screen
+-- Função para atualizar o display do contador na tela
 local function updateCounterDisplay()
     if counterDisplay then
         counterDisplay.Text = "Enemies Defeated: " .. enemyDefeatedCount
     end
 end
 
--- Function called when an enemy is defeated
+-- Função chamada quando um inimigo é derrotado
 local function onEnemyDefeated(enemy)
     if autoCounterEnabled and enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") then
-        enemyDefeatedCount = enemyDefeatedCount + 1 -- Increment the counter
-        updateCounterDisplay() -- Update the display
+        enemyDefeatedCount = enemyDefeatedCount + 1 -- Incrementa o contador
+        updateCounterDisplay() -- Atualiza o display
     end
 end
 
--- Create a text label to display the counter on screen
+-- Cria um texto para exibir o contador na tela
 local function createCounterDisplay()
     counterDisplay = Instance.new("TextLabel")
     counterDisplay.Size = UDim2.new(0, 300, 0, 50)
-    counterDisplay.Position = UDim2.new(0.5, -150, 0, 10) -- Center top of the screen
+    counterDisplay.Position = UDim2.new(0.5, -150, 0, 10) -- Centraliza no topo da tela
     counterDisplay.Text = "Enemies Defeated: 0"
-    counterDisplay.TextColor3 = Color3.new(1, 1, 1) -- White
-    counterDisplay.BackgroundTransparency = 1 -- Transparent
-    counterDisplay.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui -- Add this to the player's GUI
+    counterDisplay.TextColor3 = Color3.new(1, 1, 1) -- Branco
+    counterDisplay.BackgroundTransparency = 1 -- Transparente
+    counterDisplay.Parent = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("ScreenGui") -- Adiciona ao GUI do jogador
 end
 
--- Toggle in the Others tab for Auto Counter
+-- Toggle na aba Others para Auto Counter
 local ToggleAutoCounter = Tabs.Others:AddToggle("Auto Counter Toggle", {
     Title = "Auto Counter",
-    Default = false -- Start with it disabled
+    Default = false -- Começa com desativado
 })
 
 ToggleAutoCounter:OnChanged(function()
     autoCounterEnabled = ToggleAutoCounter.Value
     if autoCounterEnabled then
-        enemyDefeatedCount = 0 -- Reset the counter when activated
-        updateCounterDisplay() -- Update the display when activated
+        enemyDefeatedCount = 0 -- Reseta o contador quando ativado
+        updateCounterDisplay() -- Atualiza o display
+    else
+        enemyDefeatedCount = 0 -- Reseta o contador quando desativado
+        updateCounterDisplay() -- Atualiza o display
     end
 end)
 
--- Connect the function to enemy defeat event
+-- Função para conectar o evento de derrota de inimigos
 local function connectEnemyDefeatEvent()
-    local enemyDefeatEvent = game.ReplicatedStorage:FindFirstChild("EnemyDefeated") -- Replace this with your actual event
+    local enemyDefeatEvent = game.ReplicatedStorage:FindFirstChild("EnemyDefeated") -- Substitua pelo nome do seu evento
     if enemyDefeatEvent then
-        enemyDefeatEvent.OnServerEvent:Connect(onEnemyDefeated) -- Connect to the enemy defeat event
+        enemyDefeatEvent.OnServerEvent:Connect(onEnemyDefeated) -- Conecta ao evento de derrota
+    else
+        warn("EnemyDefeated event not found!")
     end
 end
 
--- Create the counter display
+-- Cria o display do contador
 createCounterDisplay()
 
--- Connect the enemy defeat event when the script starts
+-- Conecta o evento de derrota de inimigos ao iniciar o script
 connectEnemyDefeatEvent()
 
 -- Toggle na aba Player para Walk Speed
