@@ -35,54 +35,43 @@ do
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local Backpack = LocalPlayer:WaitForChild("Backpack")
-local autoActivateEnabled = false -- Estado do toggle
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
 
--- Função para ativar um item específico da mochila
-local function activateItem(itemIndex)
-    local items = Backpack:GetChildren()
-    
-    if #items >= itemIndex then -- Verifica se o índice do item é válido
-        local item = items[itemIndex]
-        
-        if item:IsA("Tool") and not item:IsDescendantOf(LocalPlayer.Character) then
-            item.Parent = LocalPlayer.Character -- Move o item para o personagem
-            wait(0.1) -- Pequena espera para garantir a mudança de Parent
-            item:Activate() -- Ativa o item
-            return true -- Retorna verdadeiro se o item foi ativado
-        end
+local antiComboEnabled = true -- Ativa o anti combo por padrão
+local lastHitTime = 0 -- Armazena o tempo do último ataque recebido
+local hitCooldown = 1 -- Tempo em segundos entre hits permitidos
+
+-- Função para aplicar o anti combo
+local function onHit(damage)
+    local currentTime = tick()
+
+    if currentTime - lastHitTime < hitCooldown then
+        -- Bloqueia o dano se o hit estiver dentro do cooldown
+        return true -- Retorna verdadeiro se o hit for bloqueado
     end
-    return false -- Retorna falso se o item não pôde ser ativado
+
+    lastHitTime = currentTime -- Atualiza o tempo do último ataque
+    return false -- Retorna falso se o hit não foi bloqueado
 end
 
--- Função para ativar o terceiro e o quarto item da mochila
-local function activateItems()
-    while autoActivateEnabled do
-        local thirdActivated = activateItem(3) -- Ativa o terceiro item
-        wait(1.5) -- Espera 1.5 segundos antes de tentar ativar o próximo item
-
-        local fourthActivated = activateItem(4) -- Ativa o quarto item
-        wait(1.5) -- Espera 1.5 segundos para garantir a ativação correta
-
-        -- Se nenhum dos itens foi ativado, para o loop
-        if not thirdActivated and not fourthActivated then
-            break
-        end
+-- Monitora ataques do Humanoid
+Humanoid.HealthChanged:Connect(function(newHealth)
+    if antiComboEnabled and onHit(Humanoid.Health) then
+        -- Define a saúde do jogador para o último valor antes do hit
+        Humanoid.Health = Humanoid.Health + (Humanoid.MaxHealth - newHealth)
     end
-end
+end)
 
--- Toggle na aba Auto Farm
-local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Skills", {
-    Title = "Ativar Habilidades (Terceiro e Quarto Itens)",
-    Default = false
+-- Toggle para ativar/desativar o anti combo
+local ToggleAntiCombo = Tabs.AutoFarm:AddToggle("Anti Combo", {
+    Title = "Ativar Anti Combo",
+    Default = true
 })
 
--- Conecta o toggle para ativar/desativar a ativação automática
-ToggleActivateItems:OnChanged(function()
-    autoActivateEnabled = ToggleActivateItems.Value
-    if autoActivateEnabled then
-        activateItems() -- Inicia a ativação do terceiro e quarto item/habilidade
-    end
+-- Conecta o toggle para ativar/desativar a funcionalidade
+ToggleAntiCombo:OnChanged(function()
+    antiComboEnabled = ToggleAntiCombo.Value
 end)
 
 -- Anti Afk
