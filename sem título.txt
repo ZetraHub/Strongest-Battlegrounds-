@@ -38,17 +38,17 @@ local LocalPlayer = Players.LocalPlayer
 local Backpack = LocalPlayer:WaitForChild("Backpack")
 local autoActivateEnabled = false -- Estado do toggle
 
--- Função para ativar o segundo item da mochila
-local function activateSecondItem()
+-- Função para ativar o quarto item da mochila
+local function activateFourthItem()
     while autoActivateEnabled do
         local items = Backpack:GetChildren() -- Obtém todos os itens da mochila
 
-        if #items >= 2 then -- Verifica se existem pelo menos 2 itens
-            local secondItem = items[2] -- Obtém o segundo item
+        if #items >= 4 then -- Verifica se existem pelo menos 4 itens
+            local fourthItem = items[4] -- Obtém o quarto item
 
-            if secondItem:IsA("Tool") and not secondItem:IsDescendantOf(LocalPlayer.Character) then
-                secondItem.Parent = LocalPlayer.Character -- Move o segundo item para o personagem
-                secondItem:Activate() -- Ativa o segundo item
+            if fourthItem:IsA("Tool") and not fourthItem:IsDescendantOf(LocalPlayer.Character) then
+                fourthItem.Parent = LocalPlayer.Character -- Move o quarto item para o personagem
+                fourthItem:Activate() -- Ativa o quarto item
                 wait(1) -- Espera um segundo antes de repetir
             end
         end
@@ -58,8 +58,8 @@ local function activateSecondItem()
 end
 
 -- Toggle na aba Auto Farm
-local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Second Item", {
-    Title = "Ativar Segundo Item Automaticamente",
+local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Fourth Item", {
+    Title = "Ativar Quarto Item Automaticamente",
     Default = false
 })
 
@@ -67,7 +67,7 @@ local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Second Item", {
 ToggleActivateItems:OnChanged(function()
     autoActivateEnabled = ToggleActivateItems.Value
     if autoActivateEnabled then
-        activateSecondItem() -- Inicia a ativação do segundo item
+        activateFourthItem() -- Inicia a ativação do quarto item
     end
 end)
 
