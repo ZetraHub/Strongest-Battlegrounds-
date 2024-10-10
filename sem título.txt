@@ -36,28 +36,20 @@ do
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Backpack = LocalPlayer:WaitForChild("Backpack")
-local activatedItems = {} -- Tabela para armazenar itens já ativados
 local autoActivateEnabled = false -- Estado do toggle
 
 -- Função para ativar itens da mochila
 local function activateItems()
-    -- Limpa a tabela de itens ativados
-    activatedItems = {}
-
     while autoActivateEnabled do
+        -- Percorre todos os itens na mochila
         for _, item in ipairs(Backpack:GetChildren()) do
-            if item:IsA("Tool") and not activatedItems[item.Name] then
+            if item:IsA("Tool") and not item:IsDescendantOf(LocalPlayer.Character) then
                 item.Parent = LocalPlayer.Character -- Move o item para o personagem
                 item:Activate() -- Ativa o item
-                activatedItems[item.Name] = true -- Marca como ativado
-                wait(1) -- Espera um segundo antes de ativar o próximo item (ajuste conforme necessário)
+                wait(1) -- Espera um segundo antes de ativar o próximo item
             end
         end
-        
-        -- Se todos os itens já foram ativados, reseta a tabela e começa novamente
-        if next(activatedItems) then
-            wait(1) -- Espera um segundo antes de reiniciar a ativação
-        end
+        wait(1) -- Espera um segundo antes de reiniciar a ativação
     end
 end
 
