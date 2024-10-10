@@ -44,6 +44,44 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local autoClickEnabled = false -- Inicialmente desativado
+
+-- Função para simular o clique no botão "F"
+local function pressFKey()
+    -- Simula o pressionamento da tecla "F"
+    UserInputService.InputBegan:Fire({
+        KeyCode = Enum.KeyCode.F,
+        UserInputType = Enum.UserInputType.Keyboard
+    })
+end
+
+-- Função para alternar o auto clique
+local function toggleAutoClick()
+    autoClickEnabled = not autoClickEnabled
+
+    if autoClickEnabled then
+        -- Conecta um loop para pressionar a tecla "F" continuamente
+        RunService.RenderStepped:Connect(function()
+            if autoClickEnabled then
+                pressFKey()
+            end
+        end)
+    end
+end
+
+-- Toggle para ativar/desativar o auto clique
+local ToggleAutoClick = Tabs.Visuals:AddToggle("Auto Click F Toggle", {
+    Title = "Auto Click F",
+    Default = false
+})
+
+ToggleAutoClick:OnChanged(function()
+    toggleAutoClick()
+end)
+
 -- Auto Awaken
 
 local Players = game:GetService("Players")
