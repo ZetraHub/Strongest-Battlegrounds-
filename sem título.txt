@@ -738,7 +738,12 @@ Tabs.Info:AddParagraph({
     Title = "Updates",
     Content = "- 10/10/2024"
 })
-    
+
+Tabs.Skills:AddParagraph({
+    Title = "Auto Skills",
+    Content = "Use skills automatically"
+})
+
 -- Addons:
 -- SaveManager (Allows you to have a configuration system)
 -- InterfaceManager (Allows you to have a interface managment system)
