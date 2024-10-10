@@ -53,6 +53,7 @@ end
 local function equipTool(index)
     if tools[index] and tools[index].Parent == Backpack then
         tools[index].Parent = LocalPlayer.Character -- Equipar o Tool
+        print("Equipando Tool: " .. tools[index].Name) -- Log para depuração
     end
 end
 
@@ -87,6 +88,7 @@ end
 Backpack.ChildAdded:Connect(function(child)
     if child:IsA("Tool") then
         table.insert(tools, child)
+        print("Nova Tool adicionada: " .. child.Name) -- Log para depuração
     end
 end)
 
@@ -95,6 +97,7 @@ Backpack.ChildRemoved:Connect(function(child)
     for i, tool in ipairs(tools) do
         if tool == child then
             table.remove(tools, i)
+            print("Tool removida: " .. child.Name) -- Log para depuração
             break
         end
     end
