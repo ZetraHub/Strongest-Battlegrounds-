@@ -43,11 +43,11 @@ local autoEquipEnabled = false -- Inicialmente desativado
 local function autoEquipTools()
     while autoEquipEnabled do
         for _, tool in pairs(Backpack:GetChildren()) do
-            if tool:IsA("Tool") then
+            if tool:IsA("Tool") and tool.Parent == Backpack then
                 tool.Parent = LocalPlayer.Character -- Move a Tool para o personagem para equipar
             end
         end
-        wait(1) -- Intervalo entre as verificações
+        wait(0.5) -- Intervalo entre as verificações, ajustado para ser mais rápido
     end
 end
 
