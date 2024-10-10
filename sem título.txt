@@ -54,11 +54,40 @@ local function equipToolByIndex(index)
     end
 end
 
--- Funções separadas para cada Tool
+-- Função para controlar a ativação de um Tool com base no índice
 local function autoEquipTool(index)
     while autoEquipEnabled[index] do
         equipToolByIndex(index)
         wait(1) -- Pequena pausa para cada ativação
+    end
+end
+
+-- Funções para cada Tool
+local function startAutoEquipTool1()
+    while autoEquipEnabled[1] do
+        equipToolByIndex(1)
+        wait(1) -- Atraso para evitar equipar muito rapidamente
+    end
+end
+
+local function startAutoEquipTool2()
+    while autoEquipEnabled[2] do
+        equipToolByIndex(2)
+        wait(1)
+    end
+end
+
+local function startAutoEquipTool3()
+    while autoEquipEnabled[3] do
+        equipToolByIndex(3)
+        wait(1)
+    end
+end
+
+local function startAutoEquipTool4()
+    while autoEquipEnabled[4] do
+        equipToolByIndex(4)
+        wait(1)
     end
 end
 
@@ -71,7 +100,7 @@ local ToggleTool1 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 1", {
 ToggleTool1:OnChanged(function()
     autoEquipEnabled[1] = ToggleTool1.Value
     if autoEquipEnabled[1] then
-        spawn(function() autoEquipTool(1) end)
+        spawn(startAutoEquipTool1)
     end
 end)
 
@@ -83,7 +112,7 @@ local ToggleTool2 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 2", {
 ToggleTool2:OnChanged(function()
     autoEquipEnabled[2] = ToggleTool2.Value
     if autoEquipEnabled[2] then
-        spawn(function() autoEquipTool(2) end)
+        spawn(startAutoEquipTool2)
     end
 end)
 
@@ -95,7 +124,7 @@ local ToggleTool3 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 3", {
 ToggleTool3:OnChanged(function()
     autoEquipEnabled[3] = ToggleTool3.Value
     if autoEquipEnabled[3] then
-        spawn(function() autoEquipTool(3) end)
+        spawn(startAutoEquipTool3)
     end
 end)
 
@@ -107,7 +136,7 @@ local ToggleTool4 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 4", {
 ToggleTool4:OnChanged(function()
     autoEquipEnabled[4] = ToggleTool4.Value
     if autoEquipEnabled[4] then
-        spawn(function() autoEquipTool(4) end)
+        spawn(startAutoEquipTool4)
     end
 end)
 
