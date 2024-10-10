@@ -33,6 +33,58 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local FlingPower = 5000 -- Ajuste o poder do fling aqui
+local flingEnabled = false -- Inicialmente desativado
+
+-- Função para dar Fling em um jogador
+local function flingPlayer(player)
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local humanoidRootPart = player.Character.HumanoidRootPart
+
+        -- Aplica uma força no HumanoidRootPart
+        local bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.Velocity = Vector3.new(math.random(-FlingPower, FlingPower), FlingPower, math.random(-FlingPower, FlingPower))
+        bodyVelocity.MaxForce = Vector3.new(1000000, 1000000, 1000000)
+        bodyVelocity.P = 1250
+        bodyVelocity.Parent = humanoidRootPart
+
+        -- Remove a força após 0.1 segundos
+        game:GetService("Debris"):AddItem(bodyVelocity, 0.1)
+    end
+end
+
+-- Função para dar Fling em todos os jogadores
+local function flingAll()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            flingPlayer(player)
+        end
+    end
+end
+
+-- Função que verifica e aplica o fling enquanto o toggle estiver ativado
+local function toggleFling()
+    while flingEnabled do
+        flingAll()
+        wait(2) -- Intervalo entre os flings
+    end
+end
+
+-- Toggle na aba Visuals para Fling All
+local ToggleFling = Tabs.AutoFarm:AddToggle("Fling All Toggle", {
+    Title = "Fling All",
+    Default = false
+})
+
+ToggleFling:OnChanged(function()
+    flingEnabled = ToggleFling.Value
+    if flingEnabled then
+        toggleFling()
+    end
+end)
+
 -- Anti Afk
 
 local VirtualUser = game:GetService("VirtualUser")
