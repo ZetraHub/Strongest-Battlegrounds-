@@ -33,44 +33,6 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
-local invisibleEnabled = false -- Invisibility disabled by default
-
--- Function to toggle invisibility
-local function setInvisibility(enabled)
-    if Character then
-        -- Make the character invisible or visible
-        for _, part in pairs(Character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.Transparency = enabled and 1 or 0 -- 1 for invisible, 0 for visible
-            end
-        end
-        -- Set humanoid transparency
-        if Character:FindFirstChild("Humanoid") then
-            Character.Humanoid.LocalTransparencyModifier = enabled and 1 or 0
-        end
-    end
-end
-
--- Monitor the toggle change
-local ToggleInvisibility = Tabs.Others:AddToggle("Invisibility", {
-    Title = "Enable Invisibility",
-    Default = false -- Disabled by default
-})
-
-ToggleInvisibility:OnChanged(function()
-    invisibleEnabled = ToggleInvisibility.Value
-    setInvisibility(invisibleEnabled) -- Update character visibility
-end)
-
--- Connect the event to update the character when it is re-added
-LocalPlayer.CharacterAdded:Connect(function(newCharacter)
-    Character = newCharacter
-    setInvisibility(invisibleEnabled) -- Apply invisibility if enabled
-end)
 
 -- Anti Afk
 
