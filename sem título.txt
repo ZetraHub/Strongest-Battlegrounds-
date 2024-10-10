@@ -49,28 +49,43 @@ local LocalPlayer = Players.LocalPlayer
 
 local invisibilityEnabled = false -- Inicialmente desativado
 
--- Função para ativar/desativar a invisibilidade
-local function toggleInvisibility()
-    invisibilityEnabled = not invisibilityEnabled -- Alterna o estado de invisibilidade
-
+-- Função para ativar a invisibilidade
+local function enableInvisibility()
     if LocalPlayer.Character then
         local character = LocalPlayer.Character
         for _, part in pairs(character:GetChildren()) do
             if part:IsA("BasePart") then
-                part.Transparency = invisibilityEnabled and 1 or 0 -- Altera a transparência
+                part.Transparency = 1 -- Torna as partes invisíveis
             end
-        end
-
-        -- Se o jogador tiver uma roupa, também a torna invisível
-        if character:FindFirstChild("Humanoid") then
-            local humanoid = character.Humanoid
-            humanoid.LocalTransparencyModifier = invisibilityEnabled and 1 or 0
         end
     end
 end
 
+-- Função para desativar a invisibilidade
+local function disableInvisibility()
+    if LocalPlayer.Character then
+        local character = LocalPlayer.Character
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 0 -- Torna as partes visíveis
+            end
+        end
+    end
+end
+
+-- Função para alternar a invisibilidade
+local function toggleInvisibility()
+    invisibilityEnabled = not invisibilityEnabled -- Alterna o estado de invisibilidade
+
+    if invisibilityEnabled then
+        enableInvisibility() -- Ativa a invisibilidade
+    else
+        disableInvisibility() -- Desativa a invisibilidade
+    end
+end
+
 -- Toggle na aba Visuals para ativar/desativar a invisibilidade
-local ToggleInvisibility = Tabs.AutoFarm:AddToggle("Invisibility Toggle", {
+local ToggleInvisibility = Tabs.Visuals:AddToggle("Invisibility Toggle", {
     Title = "Invisibility",
     Default = false
 })
