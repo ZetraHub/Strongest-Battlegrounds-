@@ -18,6 +18,7 @@ local Tabs = {
     AutoFarm = Window:AddTab({ Title = "▎Auto Farm", Icon = "swords" }),
     Others = Window:AddTab({ Title = "▎Others", Icon = "list" }),
     Visuals = Window:AddTab({ Title = "▎Visuals", Icon = "eye" }),
+    Skills = Window:AddTab({ Title = " ▎Skills", Icon = "star" }),
     Player = Window:AddTab({ Title = "▎Player", Icon = "user" }),
     Settings = Window:AddTab({ Title = "▎Settings", Icon = "settings" })
 }
