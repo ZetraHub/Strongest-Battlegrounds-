@@ -33,6 +33,46 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
+-- Auto Awaken
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local autoAwakenEnabled = false -- Inicialmente desativado
+
+-- Função para verificar e ativar o Awaken
+local function activateAwaken()
+    -- Encontre o botão de "Awaken" chamado "PUMPED UP"
+    local awakenButton = LocalPlayer.PlayerGui:FindFirstChild("PUMPED UP")
+    
+    if awakenButton and awakenButton:IsA("TextButton") then
+        -- Simula o clique no botão de Awaken
+        awakenButton:Activate()
+    end
+end
+
+-- Função que verifica e ativa o awaken enquanto o toggle estiver ativado
+local function toggleAutoAwaken()
+    while autoAwakenEnabled do
+        activateAwaken()
+        wait(1) -- Intervalo entre as verificações
+    end
+end
+
+-- Toggle na aba 'Auto Farm' para o Auto Awaken
+local ToggleAutoAwaken = Tabs.AutoFarm:AddToggle("Auto Awaken Toggle", {
+    Title = "Auto Awaken",
+    Default = false
+})
+
+ToggleAutoAwaken:OnChanged(function()
+    autoAwakenEnabled = ToggleAutoAwaken.Value
+    if autoAwakenEnabled then
+        toggleAutoAwaken()
+    end
+end)
+
+-- Fling All
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local FlingPower = 5000 -- Ajuste o poder do fling aqui
