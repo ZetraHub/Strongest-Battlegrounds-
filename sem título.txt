@@ -76,20 +76,37 @@ local espBoxes = {} -- Tabela para armazenar as caixas ESP
 -- Função para criar uma caixa ESP para um jogador
 local function createESPBox(player)
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        -- Obtenha o tamanho do personagem
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        local height = humanoid and humanoid.Height or 5.5 -- Altura padrão se não houver humanoide
+        local width = 2 -- Largura da caixa
+        local depth = 2 -- Profundidade da caixa
+
+        -- Caixa principal
         local box = Instance.new("BoxHandleAdornment")
         box.Adornee = player.Character.HumanoidRootPart
-        box.Size = Vector3.new(4, 6, 2) -- Ajuste o tamanho da caixa conforme necessário
+        box.Size = Vector3.new(width, height, depth) -- Tamanho da caixa ajustado
         box.Color3 = Color3.fromRGB(0, 255, 0) -- Cor da caixa
         box.Transparency = 0.5 -- Transparência da caixa
         box.ZIndex = 5 -- Para garantir que seja desenhada na frente
         box.Parent = workspace
 
-        espBoxes[player.UserId] = box
+        -- Outline da caixa
+        local outline = Instance.new("BoxHandleAdornment")
+        outline.Adornee = player.Character.HumanoidRootPart
+        outline.Size = Vector3.new(width + 0.2, height + 0.2, depth + 0.2) -- Tamanho ligeiramente maior para o outline
+        outline.Color3 = Color3.fromRGB(255, 255, 255) -- Cor branca para o outline
+        outline.Transparency = 0 -- Sem transparência para o outline
+        outline.ZIndex = 4 -- Desenhar atrás da caixa principal
+        outline.Parent = workspace
+
+        espBoxes[player.UserId] = {box, outline} -- Armazena tanto a caixa quanto o outline
 
         -- Atualiza a caixa se o jogador mudar de personagem
         player.CharacterAdded:Connect(function(newCharacter)
             if newCharacter:FindFirstChild("HumanoidRootPart") then
                 box.Adornee = newCharacter.HumanoidRootPart
+                outline.Adornee = newCharacter.HumanoidRootPart
             end
         end)
     end
@@ -98,7 +115,9 @@ end
 -- Função para remover a caixa ESP de um jogador
 local function removeESPBox(player)
     if espBoxes[player.UserId] then
-        espBoxes[player.UserId]:Destroy()
+        for _, adornment in pairs(espBoxes[player.UserId]) do
+            adornment:Destroy()
+        end
         espBoxes[player.UserId] = nil
     end
 end
@@ -152,6 +171,33 @@ Players.PlayerAdded:Connect(function(player)
 end)
 
 Players.PlayerRemoving:Connect(removeESPBox)
+
+-- Atualiza as caixas ESP quando o personagem do jogador local é adicionado
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if espEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                createESPBox(player)
+            end
+        end
+    end
+end)
+
+-- Atualiza as caixas ESP em cada frame
+game:GetService("RunService").RenderStepped:Connect(function()
+    if espEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and espBoxes[player.UserId] then
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    espBoxes[player.UserId][1].Adornee = player.Character.HumanoidRootPart
+                    espBoxes[player.UserId][2].Adornee = player.Character.HumanoidRootPart
+                else
+                    removeESPBox(player) -- Remove caixa se o personagem não existir
+                end
+            end
+        end
+    end
+end)
 
 -- Atualiza as caixas ESP quando o personagem do jogador local é adicionado
 LocalPlayer.CharacterAdded:Connect(function(character)
