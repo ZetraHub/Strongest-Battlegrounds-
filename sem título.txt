@@ -1,4 +1,4 @@
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZetraHub/Strongest-Battlegrounds-/refs/heads/main/sem%20t%C3%ADtulo.txt"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
@@ -33,47 +33,38 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
--- Anti combo
+-- No Stun
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 
-local antiComboEnabled = false -- Anti combo disabled by default
-local lastHitTime = 0 -- Stores the time of the last hit received
-local hitCooldown = 1 -- Time in seconds between allowed hits
+local noStunEnabled = false -- No Stun disabled by default
 
--- Function to apply anti combo
-local function onHit(damage)
-    local currentTime = tick()
-
-    if currentTime - lastHitTime < hitCooldown then
-        -- Block the damage if the hit is within cooldown
-        return true -- Returns true if the hit is blocked
-    end
-
-    lastHitTime = currentTime -- Updates the time of the last hit
-    return false -- Returns false if the hit is not blocked
+-- Function to prevent stun
+local function onStun(damage)
+    -- Return true to prevent the stun effect
+    return noStunEnabled
 end
 
--- Monitors attacks from the Humanoid
-Humanoid.HealthChanged:Connect(function(newHealth)
-    if antiComboEnabled and onHit(Humanoid.Health) then
-        -- Set the player's health to the last value before the hit
-        Humanoid.Health = Humanoid.Health + (Humanoid.MaxHealth - newHealth)
+-- Monitor stun effects on the Humanoid
+Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+    if noStunEnabled and Humanoid.Health < Humanoid.MaxHealth then
+        -- Prevent any stun effects
+        onStun(Humanoid.Health)
     end
 end)
 
--- Toggle to enable/disable anti combo
-local ToggleAntiCombo = Tabs.Settings:AddToggle("Anti Combo", {
-    Title = "Enable Anti Combo",
+-- Toggle to enable/disable No Stun
+local ToggleNoStun = Tabs.Others:AddToggle("No Stun", {
+    Title = "Enable No Stun",
     Default = false -- Disabled by default
 })
 
 -- Connects the toggle to enable/disable functionality
-ToggleAntiCombo:OnChanged(function()
-    antiComboEnabled = ToggleAntiCombo.Value
+ToggleNoStun:OnChanged(function()
+    noStunEnabled = ToggleNoStun.Value
 end)
 
 -- Anti Afk
