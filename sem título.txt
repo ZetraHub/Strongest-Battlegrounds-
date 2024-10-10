@@ -48,7 +48,7 @@ local function activateItem(itemIndex)
         if item:IsA("Tool") and not item:IsDescendantOf(LocalPlayer.Character) then
             item.Parent = LocalPlayer.Character -- Move o item para o personagem
             wait(0.1) -- Pequena espera para garantir a mudança de Parent
-            item:Activate() -- Ativa o item/habilidade
+            item:Activate() -- Ativa o item
             return true -- Retorna verdadeiro se o item foi ativado
         end
     end
