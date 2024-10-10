@@ -41,9 +41,16 @@ local autoEquipEnabled = {false, false, false, false} -- Armazena o estado de ca
 
 -- Função para equipar uma ferramenta específica com base no índice
 local function equipToolByIndex(index)
-    local tool = Backpack:FindFirstChildOfClass("Tool")
-    if tool and tool.Parent == Backpack then
-        tool.Parent = LocalPlayer.Character -- Move a Tool para o personagem
+    local tools = {} -- Tabela para armazenar as Tools
+    for _, tool in pairs(Backpack:GetChildren()) do
+        if tool:IsA("Tool") then
+            table.insert(tools, tool) -- Adiciona o tool à tabela
+        end
+    end
+
+    -- Verifica se o índice é válido e equipa o Tool correspondente
+    if tools[index] and tools[index].Parent == Backpack then
+        tools[index].Parent = LocalPlayer.Character -- Equipar o Tool
     end
 end
 
@@ -51,7 +58,7 @@ end
 local function autoEquipTool1()
     while autoEquipEnabled[1] do
         equipToolByIndex(1)
-        wait(0.5) -- Pausa antes de equipar novamente
+        wait(0.5)
     end
 end
 
