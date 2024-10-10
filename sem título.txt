@@ -38,7 +38,7 @@ local LocalPlayer = Players.LocalPlayer
 local Backpack = LocalPlayer:WaitForChild("Backpack")
 local autoActivateEnabled = false -- Estado do toggle
 
--- Função para ativar um item específico
+-- Função para ativar um item específico da mochila
 local function activateItem(itemIndex)
     local items = Backpack:GetChildren()
     
@@ -47,7 +47,8 @@ local function activateItem(itemIndex)
         
         if item:IsA("Tool") and not item:IsDescendantOf(LocalPlayer.Character) then
             item.Parent = LocalPlayer.Character -- Move o item para o personagem
-            item:Activate() -- Ativa o item
+            wait(0.1) -- Pequena espera para garantir a mudança de Parent
+            item:Activate() -- Ativa o item/habilidade
             return true -- Retorna verdadeiro se o item foi ativado
         end
     end
@@ -57,23 +58,22 @@ end
 -- Função para ativar o terceiro e o quarto item da mochila
 local function activateItems()
     while autoActivateEnabled do
-        local thirdActivated = activateItem(3) -- Tenta ativar o terceiro item
-        wait(1.5) -- Espera 1.5 segundos
-        
-        local fourthActivated = activateItem(4) -- Tenta ativar o quarto item
-        wait(1.5) -- Espera mais 1.5 segundos
-        
-        -- Se ambos os itens forem ativados, a função continua rodando
+        local thirdActivated = activateItem(3) -- Ativa o terceiro item
+        wait(1.5) -- Espera 1.5 segundos antes de tentar ativar o próximo item
+
+        local fourthActivated = activateItem(4) -- Ativa o quarto item
+        wait(1.5) -- Espera 1.5 segundos para garantir a ativação correta
+
+        -- Se nenhum dos itens foi ativado, para o loop
         if not thirdActivated and not fourthActivated then
-            -- Se nenhum dos itens foi ativado, quebra o loop para evitar execução infinita
             break
         end
     end
 end
 
 -- Toggle na aba Auto Farm
-local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Third & Fourth Items", {
-    Title = "Ativar Terceiro e Quarto Itens Automaticamente",
+local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Skills", {
+    Title = "Ativar Habilidades (Terceiro e Quarto Itens)",
     Default = false
 })
 
@@ -81,7 +81,7 @@ local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Third & Fourth Ite
 ToggleActivateItems:OnChanged(function()
     autoActivateEnabled = ToggleActivateItems.Value
     if autoActivateEnabled then
-        activateItems() -- Inicia a ativação do terceiro e quarto item
+        activateItems() -- Inicia a ativação do terceiro e quarto item/habilidade
     end
 end)
 
