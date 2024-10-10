@@ -44,56 +44,6 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local invisibilityEnabled = false -- Inicialmente desativado
-
--- Função para ativar a invisibilidade
-local function enableInvisibility()
-    if LocalPlayer.Character then
-        local character = LocalPlayer.Character
-        for _, part in pairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.Transparency = 1 -- Torna as partes invisíveis
-            end
-        end
-    end
-end
-
--- Função para desativar a invisibilidade
-local function disableInvisibility()
-    if LocalPlayer.Character then
-        local character = LocalPlayer.Character
-        for _, part in pairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.Transparency = 0 -- Torna as partes visíveis
-            end
-        end
-    end
-end
-
--- Função para alternar a invisibilidade
-local function toggleInvisibility()
-    invisibilityEnabled = not invisibilityEnabled -- Alterna o estado de invisibilidade
-
-    if invisibilityEnabled then
-        enableInvisibility() -- Ativa a invisibilidade
-    else
-        disableInvisibility() -- Desativa a invisibilidade
-    end
-end
-
--- Toggle na aba Visuals para ativar/desativar a invisibilidade
-local ToggleInvisibility = Tabs.Visuals:AddToggle("Invisibility Toggle", {
-    Title = "Invisibility",
-    Default = false
-})
-
-ToggleInvisibility:OnChanged(function()
-    toggleInvisibility()
-end)
-
 -- Auto Awaken
 
 local Players = game:GetService("Players")
