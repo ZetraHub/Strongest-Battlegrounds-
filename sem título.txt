@@ -44,7 +44,40 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
+local invisibilityEnabled = false -- Inicialmente desativado
+
+-- Função para ativar/desativar a invisibilidade
+local function toggleInvisibility()
+    invisibilityEnabled = not invisibilityEnabled -- Alterna o estado de invisibilidade
+
+    if LocalPlayer.Character then
+        local character = LocalPlayer.Character
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = invisibilityEnabled and 1 or 0 -- Altera a transparência
+            end
+        end
+
+        -- Se o jogador tiver uma roupa, também a torna invisível
+        if character:FindFirstChild("Humanoid") then
+            local humanoid = character.Humanoid
+            humanoid.LocalTransparencyModifier = invisibilityEnabled and 1 or 0
+        end
+    end
+end
+
+-- Toggle na aba Visuals para ativar/desativar a invisibilidade
+local ToggleInvisibility = Tabs.AutoFarm:AddToggle("Invisibility Toggle", {
+    Title = "Invisibility",
+    Default = false
+})
+
+ToggleInvisibility:OnChanged(function()
+    toggleInvisibility()
+end)
 
 -- Auto Awaken
 
