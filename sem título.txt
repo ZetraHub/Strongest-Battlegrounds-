@@ -1,0 +1,610 @@
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "The Strongest Battlegrounds  ▎Zetra Hub. ▎" ,
+    SubTitle = "ZetraScripts YT",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(480, 360),
+    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+})
+
+--Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
+local Tabs = {
+    Info = Window:AddTab({ Title = " ▎Info", Icon = "scroll" }),
+    AutoFarm = Window:AddTab({ Title = "▎Auto Farm", Icon = "swords" }),
+    Others = Window:AddTab({ Title = "▎Others", Icon = "list" }),
+    Visuals = Window:AddTab({ Title = "▎Visuals", Icon = "eye" }),
+    Player = Window:AddTab({ Title = "▎Player", Icon = "user" }),
+    Settings = Window:AddTab({ Title = "▎Settings", Icon = "settings" })
+}
+
+local Options = Fluent.Options
+
+do
+
+    Fluent:Notify({
+        Title = "Notification",
+        Content = "This is a notification",
+        SubContent = "SubContent", -- Optional
+        Duration = 5 -- Set to nil to make the notification not disappear
+    })
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local enemyDefeatedCount = 0 -- Inicializa o contador de inimigos derrotados
+local autoCounterEnabled = false -- Inicializa o toggle como desativado
+local counterDisplay -- Variável para armazenar o display do contador
+
+-- Função para atualizar a exibição do contador na tela
+local function updateCounterDisplay()
+    if counterDisplay then
+        counterDisplay.Text = "Inimigos Derrotados: " .. enemyDefeatedCount
+    end
+end
+
+-- Função chamada quando um inimigo é derrotado (após o clique M1)
+local function onEnemyDefeated(enemy)
+    if autoCounterEnabled and enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") then
+        enemyDefeatedCount = enemyDefeatedCount + 1 -- Incrementa o contador
+        updateCounterDisplay() -- Atualiza a exibição
+    end
+end
+
+-- Cria um texto para exibir o contador na tela
+local function createCounterDisplay()
+    counterDisplay = Instance.new("TextLabel")
+    counterDisplay.Size = UDim2.new(0, 300, 0, 50)
+    counterDisplay.Position = UDim2.new(0.5, -150, 0, 10) -- Posiciona no centro superior da tela
+    counterDisplay.Text = "Inimigos Derrotados: 0"
+    counterDisplay.TextColor3 = Color3.new(1, 1, 1) -- Branco
+    counterDisplay.BackgroundTransparency = 1 -- Transparente
+    counterDisplay.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui -- Adicione isso ao GUI do jogador
+end
+
+-- Função para detectar cliques do mouse
+local function onMouseClick(target)
+    if target:IsA("Model") and target:FindFirstChild("Humanoid") then
+        onEnemyDefeated(target) -- Chama a função para contar o inimigo derrotado
+    end
+end
+
+-- Toggle na aba Others para Auto Counter
+local ToggleAutoCounter = Tabs.Others:AddToggle("Auto Counter Toggle", {
+    Title = "Auto Counter",
+    Default = false -- Inicialmente desativado
+})
+
+ToggleAutoCounter:OnChanged(function()
+    autoCounterEnabled = ToggleAutoCounter.Value
+    if autoCounterEnabled then
+        enemyDefeatedCount = 0 -- Reinicia o contador ao ativar
+        updateCounterDisplay() -- Atualiza a exibição quando ativado
+    end
+end)
+
+-- Conectar a detecção de cliques do mouse
+local playerMouse = LocalPlayer:GetMouse()
+playerMouse.Button1Down:Connect(function()
+    if autoCounterEnabled then
+        local target = playerMouse.Target -- O alvo do mouse
+        onMouseClick(target) -- Verifica se o alvo é um inimigo
+    end
+end)
+
+-- Cria a exibição do contador
+createCounterDisplay()
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local walkSpeedEnabled = true -- Inicialmente ativado
+local walkSpeed = 16 -- Velocidade de caminhada padrão
+
+-- Função para ajustar a velocidade de caminhada
+local function adjustWalkSpeed()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        -- Aplica a velocidade correspondente
+        LocalPlayer.Character.Humanoid.WalkSpeed = walkSpeedEnabled and walkSpeed or 16 
+    end
+end
+
+-- Toggle na aba Player para Walk Speed
+local ToggleWalkSpeed = Tabs.Player:AddToggle("Walk Speed Toggle", {
+    Title = "Walk Speed",
+    Default = true -- Inicialmente ativado
+})
+
+ToggleWalkSpeed:OnChanged(function()
+    walkSpeedEnabled = ToggleWalkSpeed.Value
+    adjustWalkSpeed() -- Ajusta a velocidade sempre que o toggle é alterado
+end)
+
+-- Slider para ajustar a velocidade de caminhada na aba Player
+local Slider = Tabs.Player:AddSlider("Walk Speed Slider", {
+    Title = "Velocidade de Caminhada",
+    Description = "Adjust walking speed",
+    Default = 16, -- Velocidade padrão
+    Min = 0,     -- Mínimo de velocidade
+    Max = 100,   -- Máximo de velocidade
+    Rounding = 1, -- Arredondamento
+    Callback = function(Value)
+        walkSpeed = Value -- Ajusta a velocidade de caminhada para o valor do slider
+        if walkSpeedEnabled then
+            adjustWalkSpeed() -- Atualiza a velocidade se estiver ativada
+        end
+    end
+})
+
+Slider:OnChanged(function(Value)
+    print("Slider changed:", Value)
+end)
+
+-- Atualiza a velocidade de caminhada ao adicionar o personagem
+LocalPlayer.CharacterAdded:Connect(function(character)
+    character:WaitForChild("Humanoid") -- Espera até que o Humanoid esteja presente
+    adjustWalkSpeed() -- Ajusta a velocidade com base no toggle
+end)
+
+-- Ajusta a velocidade de caminhada se o personagem já estiver presente
+if LocalPlayer.Character then
+    adjustWalkSpeed() -- Chama a função imediatamente para garantir que a velocidade esteja definida
+end
+
+-- Anti Afk
+
+local VirtualUser = game:GetService("VirtualUser")
+local antiAFKEnabled = true -- Ativado por padrão
+
+-- Função para prevenir o AFK
+local function antiAFK()
+    if antiAFKEnabled then
+        game:GetService("Players").LocalPlayer.Idled:Connect(function()
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
+        end)
+    end
+end
+
+-- Executa a função automaticamente ao carregar o script (default true)
+antiAFK()
+
+-- Toggle para o anti AFK
+local ToggleAntiAFK = Tabs.Others:AddToggle("Anti AFK", {
+    Title = "Anti AFK",
+    Default = true -- Ativado por padrão
+})
+
+ToggleAntiAFK:OnChanged(function()
+    antiAFKEnabled = ToggleAntiAFK.Value -- Atualiza o valor de ativado/desativado
+    if antiAFKEnabled then
+        antiAFK() -- Ativa o anti AFK
+    end
+end)
+
+-- ESP
+
+local EspSection = Tabs.Visuals:AddSection("ESP")
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local showNameAndDistance = false
+
+-- Função para exibir nome e distância
+local function showNameAndDistanceFunction()
+    RunService.RenderStepped:Connect(function()
+        if showNameAndDistance then
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local playerRoot = player.Character.HumanoidRootPart
+                    local distance = (playerRoot.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+
+                    -- Cria um BillboardGui para exibir o nome e a distância
+                    if not player.Character:FindFirstChild("NameDistanceGui") then
+                        local billboardGui = Instance.new("BillboardGui")
+                        billboardGui.Name = "NameDistanceGui"
+                        billboardGui.Size = UDim2.new(0, 200, 0, 50)
+                        billboardGui.Adornee = playerRoot
+                        billboardGui.AlwaysOnTop = true
+                        billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+                        billboardGui.Parent = player.Character
+
+                        local textLabel = Instance.new("TextLabel")
+                        textLabel.Size = UDim2.new(1, 0, 1, 0)
+                        textLabel.Text = player.Name .. " [" .. math.floor(distance) .. "m]"
+                        textLabel.TextColor3 = Color3.new(1, 1, 1)
+                        textLabel.BackgroundTransparency = 1
+                        textLabel.TextStrokeTransparency = 0.5
+                        textLabel.Parent = billboardGui
+                    else
+                        -- Atualiza o texto de nome e distância
+                        local billboardGui = player.Character:FindFirstChild("NameDistanceGui")
+                        billboardGui.TextLabel.Text = player.Name .. " [" .. math.floor(distance) .. "m]"
+                    end
+                end
+            end
+        else
+            -- Remove os Billboards quando desativado
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("NameDistanceGui") then
+                    player.Character:FindFirstChild("NameDistanceGui"):Destroy()
+                end
+            end
+        end
+    end)
+end
+
+-- Toggle para exibir Nome e Distância
+local ToggleNameDistance = Tabs.Visuals:AddToggle("Name & Distance Toggle", {
+    Title = "Show Name & Distance",
+    Default = false
+})
+
+ToggleNameDistance:OnChanged(function()
+    showNameAndDistance = ToggleNameDistance.Value
+    showNameAndDistanceFunction()
+end)
+
+-- Atualiza a lista de jogadores quando eles entram ou saem
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if showNameAndDistance then
+            showNameAndDistanceFunction()
+        end
+    end)
+end)
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local espEnabled = false
+local espHighlights = {}
+
+-- Função para criar o ESP highlight
+local function createESP(player)
+    if player.Character then
+        local highlight = Instance.new("Highlight")
+        highlight.Adornee = player.Character -- Adorna o personagem completo
+        highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Verde
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- Branco
+        highlight.Parent = player.Character
+
+        espHighlights[player.UserId] = highlight
+
+        -- Atualiza o highlight se o jogador mudar de personagem
+        player.CharacterAdded:Connect(function(newCharacter)
+            highlight.Adornee = newCharacter
+        end)
+    end
+end
+
+-- Função para remover o ESP highlight
+local function removeESP(player)
+    if espHighlights[player.UserId] then
+        espHighlights[player.UserId]:Destroy()
+        espHighlights[player.UserId] = nil
+    end
+end
+
+-- Função para ativar/desativar o ESP
+local function toggleESP()
+    if espEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                createESP(player)
+            end
+        end
+    else
+        for _, player in pairs(Players:GetPlayers()) do
+            removeESP(player)
+        end
+    end
+end
+
+-- Toggle na aba de Visuals
+local Toggle = Tabs.Visuals:AddToggle("ESP Toggle", {
+    Title = "Esp All Players",
+    Default = false -- Define o valor inicial como 'false' para evitar ativar automaticamente
+})
+
+-- Certifique-se de que o ESP só ative quando o toggle for alterado
+Toggle:OnChanged(function()
+    espEnabled = Toggle.Value
+    toggleESP()
+end)
+
+-- Adiciona ESP para jogadores já presentes
+for _, player in pairs(Players:GetPlayers()) do
+    if espEnabled and player ~= LocalPlayer then
+        createESP(player)
+    end
+
+    player.CharacterAdded:Connect(function()
+        if espEnabled then
+            createESP(player)
+        end
+    end)
+end
+
+-- Atualiza a lista de jogadores quando eles entram ou saem
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if espEnabled then
+            createESP(player)
+        end
+    end)
+end)
+
+Players.PlayerRemoving:Connect(removeESP)
+
+-- AUTO PLAY
+
+local Toggle = Tabs.AutoFarm:AddToggle("MyToggle", {Title = "Auto Play", Default = false })
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local isRunning = false
+
+Toggle:OnChanged(function()
+    if Options.MyToggle.Value then
+        print("Auto Play ativado")
+        isRunning = true
+
+        -- Desabilita o "Auto Jump" e o "Auto Stun" para garantir que o player não seja interrompido
+        LocalPlayer.Character.Humanoid.AutoJumpEnabled = false
+        LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
+
+        while isRunning do
+            local closestPlayer = nil
+            local shortestDistance = math.huge
+
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).magnitude
+                    if distance < shortestDistance then
+                        closestPlayer = player
+                        shortestDistance = distance
+                    end
+                end
+            end
+
+            if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.Humanoid:MoveTo(closestPlayer.Character.HumanoidRootPart.Position)
+            end
+
+            wait(0.1)
+
+            -- Verifica se o toggle foi desativado
+            if not Options.MyToggle.Value then
+                isRunning = false
+                -- Restaura o estado padrão do Humanoid
+                LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
+                LocalPlayer.Character.Humanoid.AutoJumpEnabled = true
+                LocalPlayer.Character.Humanoid:MoveTo(LocalPlayer.Character.HumanoidRootPart.Position)
+                print("Auto Play desativado")
+            end
+        end
+    end
+end)
+
+Options.MyToggle:SetValue(false)
+    
+
+    local Input = Tabs.AutoFarm:AddInput("Input", {
+        Title = "Input",
+        Default = "Default",
+        Placeholder = "Placeholder",
+        Numeric = false, -- Only allows numbers
+        Finished = false, -- Only calls callback when you press enter
+        Callback = function(Value)
+            print("Input changed:", Value)
+        end
+    })
+
+    Input:OnChanged(function()
+        print("Input updated:", Input.Value)
+    end)
+end
+
+-- kill farm
+
+local TweenService = game:GetService("TweenService")
+
+local Toggle = Tabs.AutoFarm:AddToggle("AutoFarmPlayerToggle", { 
+    Title = "Kill Farm (Select Enemy)", 
+    Default = false 
+})
+
+local Dropdown = Tabs.AutoFarm:AddDropdown("PlayerDropdown", {
+    Title = "Select Enemy",
+    Values = {},
+    Multi = false,
+    Default = Players,
+})
+
+local AutoFarmEnabled = false
+local selectedTarget = nil
+
+local function UpdatePlayerList()
+    local players = {}
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            table.insert(players, player.Name)
+        end
+    end
+    Options.PlayerDropdown:SetValues(players)
+    
+    if selectedTarget and not game.Players:FindFirstChild(selectedTarget.Name) then
+        selectedTarget = nil
+    end
+end
+
+-- Função para teleporte instantâneo atrás e abaixo do jogador alvo
+local function TeleportToPlayerBack(targetPlayer)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetCharacter = targetPlayer.Character
+        local targetPosition = targetCharacter.HumanoidRootPart.Position
+        local targetLookVector = targetCharacter.HumanoidRootPart.CFrame.LookVector
+
+        if character then
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                -- Ancorar o personagem para evitar que ele caia durante o teleporte
+                humanoidRootPart.Anchored = true
+                
+                -- Calcula a posição ligeiramente abaixo e atrás do jogador
+                local behindPosition = targetPosition - (targetLookVector * 2) + Vector3.new(0, -1, 0)  -- -1 ajusta a altura
+
+                -- Teleporte instantâneo
+                humanoidRootPart.CFrame = CFrame.new(behindPosition, targetPosition)
+
+                -- Desancorar o personagem após o teleporte
+                humanoidRootPart.Anchored = false
+            end
+        end
+    end
+end
+
+local function FindPlayerByName(playerName)
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player.Name == playerName then
+            return player
+        end
+    end
+    return nil
+end
+
+local function StartAutoFarm()
+    while AutoFarmEnabled do
+        if selectedTarget and selectedTarget.Character and selectedTarget.Character:FindFirstChild("HumanoidRootPart") then
+            -- Realiza o teleporte para o jogador alvo
+            TeleportToPlayerBack(selectedTarget)
+        end
+
+        wait(0.05) -- Pequeno intervalo entre os teletransportes
+    end
+end
+
+Dropdown:OnChanged(function()
+    local selectedPlayerName = Options.PlayerDropdown.Value
+    selectedTarget = FindPlayerByName(selectedPlayerName)
+end)
+
+Toggle:OnChanged(function()
+    AutoFarmEnabled = Options.AutoFarmPlayerToggle.Value
+
+    if AutoFarmEnabled and selectedTarget then
+        StartAutoFarm()
+    else
+        selectedTarget = nil
+        print("Auto Farm desativado.")
+    end
+end)
+
+UpdatePlayerList()
+game.Players.PlayerAdded:Connect(UpdatePlayerList)
+game.Players.PlayerRemoving:Connect(UpdatePlayerList)
+
+Tabs.AutoFarm:AddButton({
+    Title = "Refresh Enemy",
+    Description = "Activate this feature to monitor the nearest enemy and stay one step ahead in battles!",
+    Callback = function()
+        -- Código para o Refresh Enemy ao clicar no botão
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local isRefreshing = true -- Ativa o refresh automaticamente
+        local refreshRate = 0.5 -- Define a taxa de "refresh" (atualização) dos inimigos
+
+        -- Inicia o loop de refresh enemy ao clicar no botão
+        while isRefreshing do
+            local closestPlayer = nil
+            local shortestDistance = math.huge
+
+            -- Busca o inimigo mais próximo (Refresh Enemy)
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).magnitude
+                    if distance < shortestDistance then
+                        closestPlayer = player
+                        shortestDistance = distance
+                    end
+                end
+            end
+
+            -- Exibe o inimigo mais próximo no console
+            if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                print("Nearest enemy: ", closestPlayer.Name)
+            end
+
+            -- Aguarda antes de fazer um novo ciclo (ajusta o intervalo conforme necessário)
+            wait(refreshRate)
+
+            -- Você pode adicionar uma condição para parar o loop se necessário
+        end
+    end
+})
+
+
+
+Tabs.Info:AddParagraph({
+        Title = "Script Working!",
+        Content = ""
+    })
+
+Tabs.Info:AddParagraph({
+    Title = "Supported",
+    Content = "- Mobile\n- PC\n- Emulator\n- Console"
+})
+
+Tabs.Info:AddParagraph({
+    Title = "Credits Script",
+    Content = "- YouTube ZetraScripts"
+})
+
+Tabs.Info:AddParagraph({
+    Title = "Updates",
+    Content = "- 10/10/2024"
+})
+    
+-- Addons:
+-- SaveManager (Allows you to have a configuration system)
+-- InterfaceManager (Allows you to have a interface managment system)
+
+-- Hand the library over to our managers
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+-- Ignore keys that are used by ThemeManager.
+-- (we dont want configs to save themes, do we?)
+SaveManager:IgnoreThemeSettings()
+
+-- You can add indexes of elements the save manager should ignore
+SaveManager:SetIgnoreIndexes({})
+
+-- use case for doing it this way:
+-- a script hub could have themes in a global folder
+-- and game configs in a separate folder per game
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title = "Fluent",
+    Content = "The script has been loaded.",
+    Duration = 8
+})
+
+
+-- You can use the SaveManager:LoadAutoloadConfig() to load a config
+-- which has been marked to be one that auto loads!
+SaveManager:LoadAutoloadConfig()
