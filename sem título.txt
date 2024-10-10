@@ -39,15 +39,21 @@ local LocalPlayer = Players.LocalPlayer
 local Backpack = LocalPlayer:WaitForChild("Backpack")
 local autoEquipEnabled = false -- Inicialmente desativado
 
--- Função para equipar todos os itens da mochila
-local function autoEquipTools()
+-- Função para equipar as ferramentas (Tools) uma de cada vez
+local function autoEquipSequentially()
     while autoEquipEnabled do
         for _, tool in pairs(Backpack:GetChildren()) do
-            if tool:IsA("Tool") and tool.Parent == Backpack then
-                tool.Parent = LocalPlayer.Character -- Move a Tool para o personagem para equipar
+            if tool:IsA("Tool") then
+                -- Equipar a ferramenta atual
+                tool.Parent = LocalPlayer.Character 
+                
+                -- Espera até que o jogador desequipe antes de equipar a próxima
+                while tool.Parent == LocalPlayer.Character and autoEquipEnabled do
+                    wait(0.1) -- Verifica a cada 0.1 segundo se o item foi desequipado
+                end
             end
         end
-        wait(0.5) -- Intervalo entre as verificações, ajustado para ser mais rápido
+        wait(0.5) -- Pausa breve antes de recomeçar o ciclo
     end
 end
 
@@ -60,7 +66,7 @@ local ToggleAutoEquip = Tabs.AutoFarm:AddToggle("Auto Equip Toggle", {
 ToggleAutoEquip:OnChanged(function()
     autoEquipEnabled = ToggleAutoEquip.Value
     if autoEquipEnabled then
-        autoEquipTools()
+        autoEquipSequentially()
     end
 end)
 
