@@ -37,36 +37,91 @@ do
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Backpack = LocalPlayer:WaitForChild("Backpack")
-local autoEquipEnabled = false -- Inicialmente desativado
+local autoEquipEnabled = {false, false, false, false} -- Armazena o estado de cada toggle
 
--- Função para equipar as ferramentas (Tools) uma de cada vez
-local function autoEquipSequentially()
-    while autoEquipEnabled do
-        for _, tool in pairs(Backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                -- Equipar a ferramenta atual
-                tool.Parent = LocalPlayer.Character 
-                
-                -- Espera até que o jogador desequipe antes de equipar a próxima
-                while tool.Parent == LocalPlayer.Character and autoEquipEnabled do
-                    wait(0.1) -- Verifica a cada 0.1 segundo se o item foi desequipado
-                end
-            end
-        end
-        wait(0.5) -- Pausa breve antes de recomeçar o ciclo
+-- Função para equipar uma ferramenta específica com base no índice
+local function equipToolByIndex(index)
+    local tool = Backpack:FindFirstChildOfClass("Tool")
+    if tool and tool.Parent == Backpack then
+        tool.Parent = LocalPlayer.Character -- Move a Tool para o personagem
     end
 end
 
--- Toggle na aba 'Auto Farm' para Auto Equip
-local ToggleAutoEquip = Tabs.AutoFarm:AddToggle("Auto Equip Toggle", {
-    Title = "Auto Equip",
+-- Funções separadas para cada Tool
+local function autoEquipTool1()
+    while autoEquipEnabled[1] do
+        equipToolByIndex(1)
+        wait(0.5) -- Pausa antes de equipar novamente
+    end
+end
+
+local function autoEquipTool2()
+    while autoEquipEnabled[2] do
+        equipToolByIndex(2)
+        wait(0.5)
+    end
+end
+
+local function autoEquipTool3()
+    while autoEquipEnabled[3] do
+        equipToolByIndex(3)
+        wait(0.5)
+    end
+end
+
+local function autoEquipTool4()
+    while autoEquipEnabled[4] do
+        equipToolByIndex(4)
+        wait(0.5)
+    end
+end
+
+-- Toggle na aba 'Auto Farm' para cada Tool
+local ToggleTool1 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 1", {
+    Title = "Auto Equip Tool 1",
     Default = false
 })
 
-ToggleAutoEquip:OnChanged(function()
-    autoEquipEnabled = ToggleAutoEquip.Value
-    if autoEquipEnabled then
-        autoEquipSequentially()
+ToggleTool1:OnChanged(function()
+    autoEquipEnabled[1] = ToggleTool1.Value
+    if autoEquipEnabled[1] then
+        autoEquipTool1()
+    end
+end)
+
+local ToggleTool2 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 2", {
+    Title = "Auto Equip Tool 2",
+    Default = false
+})
+
+ToggleTool2:OnChanged(function()
+    autoEquipEnabled[2] = ToggleTool2.Value
+    if autoEquipEnabled[2] then
+        autoEquipTool2()
+    end
+end)
+
+local ToggleTool3 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 3", {
+    Title = "Auto Equip Tool 3",
+    Default = false
+})
+
+ToggleTool3:OnChanged(function()
+    autoEquipEnabled[3] = ToggleTool3.Value
+    if autoEquipEnabled[3] then
+        autoEquipTool3()
+    end
+end)
+
+local ToggleTool4 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 4", {
+    Title = "Auto Equip Tool 4",
+    Default = false
+})
+
+ToggleTool4:OnChanged(function()
+    autoEquipEnabled[4] = ToggleTool4.Value
+    if autoEquipEnabled[4] then
+        autoEquipTool4()
     end
 end)
 
