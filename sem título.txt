@@ -33,7 +33,6 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
-
 -- Anti Afk
 
 local VirtualUser = game:GetService("VirtualUser")
