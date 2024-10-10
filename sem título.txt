@@ -41,16 +41,23 @@ local autoActivateEnabled = false -- Estado do toggle
 
 -- Função para ativar itens da mochila
 local function activateItems()
+    -- Limpa a tabela de itens ativados
+    activatedItems = {}
+
     while autoActivateEnabled do
         for _, item in ipairs(Backpack:GetChildren()) do
-            if not activatedItems[item.Name] and item:IsA("Tool") then
+            if item:IsA("Tool") and not activatedItems[item.Name] then
                 item.Parent = LocalPlayer.Character -- Move o item para o personagem
                 item:Activate() -- Ativa o item
                 activatedItems[item.Name] = true -- Marca como ativado
                 wait(1) -- Espera um segundo antes de ativar o próximo item (ajuste conforme necessário)
             end
         end
-        wait(1) -- Espera um segundo antes de reiniciar a ativação (ajuste conforme necessário)
+        
+        -- Se todos os itens já foram ativados, reseta a tabela e começa novamente
+        if next(activatedItems) then
+            wait(1) -- Espera um segundo antes de reiniciar a ativação
+        end
     end
 end
 
@@ -63,7 +70,6 @@ local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Auto Activate Items", {
 -- Conecta o toggle para ativar/desativar a ativação automática
 ToggleActivateItems:OnChanged(function()
     autoActivateEnabled = ToggleActivateItems.Value
-    activatedItems = {} -- Reseta os itens ativados ao ativar o toggle
     if autoActivateEnabled then
         activateItems() -- Inicia a ativação dos itens
     end
