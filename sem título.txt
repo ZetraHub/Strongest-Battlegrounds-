@@ -70,74 +70,74 @@ local EspSection = Tabs.Visuals:AddSection("ESP")
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local tracersEnabled = false -- Inicialmente desativado
-local tracers = {} -- Tabela para armazenar os tracers
+local espEnabled = false -- Inicialmente desativado
+local espBoxes = {} -- Tabela para armazenar as caixas ESP
 
--- Função para criar um tracer para um jogador
-local function createTracer(player)
+-- Função para criar uma caixa ESP para um jogador
+local function createESPBox(player)
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local tracer = Instance.new("LineHandleAdornment")
-        tracer.Adornee = player.Character.HumanoidRootPart
-        tracer.Length = 100 -- Ajuste a distância do tracer
-        tracer.Color3 = Color3.fromRGB(0, 255, 0) -- Cor do tracer
-        tracer.Thickness = 2 -- Espessura do tracer
-        tracer.ZIndex = 5 -- Para garantir que seja desenhado na frente
-        tracer.Parent = workspace
-        
-        tracers[player.UserId] = tracer
+        local box = Instance.new("BoxHandleAdornment")
+        box.Adornee = player.Character.HumanoidRootPart
+        box.Size = Vector3.new(4, 6, 2) -- Ajuste o tamanho da caixa conforme necessário
+        box.Color3 = Color3.fromRGB(0, 255, 0) -- Cor da caixa
+        box.Transparency = 0.5 -- Transparência da caixa
+        box.ZIndex = 5 -- Para garantir que seja desenhada na frente
+        box.Parent = workspace
 
-        -- Atualiza o tracer se o jogador mudar de personagem
+        espBoxes[player.UserId] = box
+
+        -- Atualiza a caixa se o jogador mudar de personagem
         player.CharacterAdded:Connect(function(newCharacter)
             if newCharacter:FindFirstChild("HumanoidRootPart") then
-                tracer.Adornee = newCharacter.HumanoidRootPart
+                box.Adornee = newCharacter.HumanoidRootPart
             end
         end)
     end
 end
 
--- Função para remover o tracer de um jogador
-local function removeTracer(player)
-    if tracers[player.UserId] then
-        tracers[player.UserId]:Destroy()
-        tracers[player.UserId] = nil
+-- Função para remover a caixa ESP de um jogador
+local function removeESPBox(player)
+    if espBoxes[player.UserId] then
+        espBoxes[player.UserId]:Destroy()
+        espBoxes[player.UserId] = nil
     end
 end
 
--- Função para ativar/desativar os tracers
-local function toggleTracers()
-    if tracersEnabled then
+-- Função para ativar/desativar o ESP Box
+local function toggleESPBox()
+    if espEnabled then
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
-                createTracer(player)
+                createESPBox(player)
             end
         end
     else
         for _, player in pairs(Players:GetPlayers()) do
-            removeTracer(player)
+            removeESPBox(player)
         end
     end
 end
 
--- Toggle na aba Visuals para Tracers
-local ToggleTracers = Tabs.Visuals:AddToggle("Tracers Toggle", {
-    Title = "Tracers",
+-- Toggle na aba Visuals para ESP Box
+local ToggleESPBox = Tabs.Visuals:AddToggle("ESP Box Toggle", {
+    Title = "ESP Box",
     Default = false
 })
 
-ToggleTracers:OnChanged(function()
-    tracersEnabled = ToggleTracers.Value
-    toggleTracers()
+ToggleESPBox:OnChanged(function()
+    espEnabled = ToggleESPBox.Value
+    toggleESPBox()
 end)
 
--- Adiciona tracers para jogadores já presentes
+-- Adiciona ESP Box para jogadores já presentes
 for _, player in pairs(Players:GetPlayers()) do
-    if tracersEnabled and player ~= LocalPlayer then
-        createTracer(player)
+    if espEnabled and player ~= LocalPlayer then
+        createESPBox(player)
     end
 
     player.CharacterAdded:Connect(function(character)
-        if tracersEnabled then
-            createTracer(player)
+        if espEnabled then
+            createESPBox(player)
         end
     end)
 end
@@ -145,13 +145,39 @@ end
 -- Atualiza a lista de jogadores quando eles entram ou saem
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function()
-        if tracersEnabled then
-            createTracer(player)
+        if espEnabled then
+            createESPBox(player)
         end
     end)
 end)
 
-Players.PlayerRemoving:Connect(removeTracer)
+Players.PlayerRemoving:Connect(removeESPBox)
+
+-- Atualiza as caixas ESP quando o personagem do jogador local é adicionado
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if espEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                createESPBox(player)
+            end
+        end
+    end
+end)
+
+-- Atualiza as caixas ESP em cada frame
+game:GetService("RunService").RenderStepped:Connect(function()
+    if espEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and espBoxes[player.UserId] then
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    espBoxes[player.UserId].Adornee = player.Character.HumanoidRootPart
+                else
+                    removeESPBox(player) -- Remove caixa se o personagem não existir
+                end
+            end
+        end
+    end
+end)
 
 -- Atualiza os tracers quando o personagem do jogador local é adicionado
 LocalPlayer.CharacterAdded:Connect(function(character)
