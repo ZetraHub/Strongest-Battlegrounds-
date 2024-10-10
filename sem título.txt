@@ -44,42 +44,40 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
-local UserInputService = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
 
-local autoClickEnabled = false -- Inicialmente desativado
+local autoDashEnabled = false -- Inicialmente desativado
 
--- Função para simular o clique no botão "F"
+-- Função para simular o pressionamento da tecla "F"
 local function pressFKey()
-    -- Simula o pressionamento da tecla "F"
-    UserInputService.InputBegan:Fire({
-        KeyCode = Enum.KeyCode.F,
-        UserInputType = Enum.UserInputType.Keyboard
-    })
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game) -- Pressiona "F"
+    wait(0.1) -- Tempo breve para segurar o botão (pode ser ajustado)
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game) -- Solta "F"
 end
 
--- Função para alternar o auto clique
-local function toggleAutoClick()
-    autoClickEnabled = not autoClickEnabled
+-- Função para alternar o auto dash
+local function toggleAutoDash()
+    autoDashEnabled = not autoDashEnabled
 
-    if autoClickEnabled then
-        -- Conecta um loop para pressionar a tecla "F" continuamente
+    if autoDashEnabled then
+        -- Conecta um loop para executar o dash continuamente
         RunService.RenderStepped:Connect(function()
-            if autoClickEnabled then
+            if autoDashEnabled then
                 pressFKey()
             end
         end)
     end
 end
 
--- Toggle para ativar/desativar o auto clique
-local ToggleAutoClick = Tabs.Visuals:AddToggle("Auto Click F Toggle", {
-    Title = "Auto Click F",
+-- Toggle para ativar/desativar o auto dash
+local ToggleAutoDash = Tabs.Visuals:AddToggle("Auto Dash Toggle", {
+    Title = "Auto Dash",
     Default = false
 })
 
-ToggleAutoClick:OnChanged(function()
-    toggleAutoClick()
+ToggleAutoDash:OnChanged(function()
+    toggleAutoDash()
 end)
 
 -- Auto Awaken
