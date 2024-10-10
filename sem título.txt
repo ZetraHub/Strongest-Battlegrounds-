@@ -38,28 +38,36 @@ local LocalPlayer = Players.LocalPlayer
 local Backpack = LocalPlayer:WaitForChild("Backpack")
 local autoActivateEnabled = false -- Estado do toggle
 
--- Função para ativar o quarto item da mochila
-local function activateFourthItem()
+-- Função para ativar o terceiro e o quarto item da mochila
+local function activateThirdAndFourthItem()
     while autoActivateEnabled do
         local items = Backpack:GetChildren() -- Obtém todos os itens da mochila
 
+        if #items >= 3 then -- Verifica se existem pelo menos 3 itens
+            local thirdItem = items[3] -- Obtém o terceiro item
+            if thirdItem:IsA("Tool") and not thirdItem:IsDescendantOf(LocalPlayer.Character) then
+                thirdItem.Parent = LocalPlayer.Character -- Move o terceiro item para o personagem
+                thirdItem:Activate() -- Ativa o terceiro item
+                wait(1) -- Espera um segundo antes de ativar o próximo item
+            end
+        end
+        
         if #items >= 4 then -- Verifica se existem pelo menos 4 itens
             local fourthItem = items[4] -- Obtém o quarto item
-
             if fourthItem:IsA("Tool") and not fourthItem:IsDescendantOf(LocalPlayer.Character) then
                 fourthItem.Parent = LocalPlayer.Character -- Move o quarto item para o personagem
                 fourthItem:Activate() -- Ativa o quarto item
                 wait(1) -- Espera um segundo antes de repetir
             end
         end
-        
+
         wait(1) -- Espera um segundo antes de verificar novamente
     end
 end
 
 -- Toggle na aba Auto Farm
-local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Fourth Item", {
-    Title = "Ativar Quarto Item Automaticamente",
+local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Third & Fourth Items", {
+    Title = "Ativar Terceiro e Quarto Itens Automaticamente",
     Default = false
 })
 
@@ -67,7 +75,7 @@ local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Fourth Item", {
 ToggleActivateItems:OnChanged(function()
     autoActivateEnabled = ToggleActivateItems.Value
     if autoActivateEnabled then
-        activateFourthItem() -- Inicia a ativação do quarto item
+        activateThirdAndFourthItem() -- Inicia a ativação do terceiro e quarto item
     end
 end)
 
