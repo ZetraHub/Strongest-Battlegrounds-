@@ -76,39 +76,43 @@ local espBoxes = {} -- Tabela para armazenar as caixas ESP
 -- Função para criar uma caixa ESP para um jogador
 local function createESPBox(player)
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        -- Obtenha o tamanho do personagem
+        -- Obtenha o humanoide e verifique se ele existe
         local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        local height = humanoid and humanoid.Height or 5.5 -- Altura padrão se não houver humanoide
-        local width = 2 -- Largura da caixa
-        local depth = 2 -- Profundidade da caixa
+        if humanoid then
+            local height = humanoid.HipHeight * 2 -- Ajusta com base na altura do humanoide
+            local width = 2 -- Largura da caixa
+            local depth = 2 -- Profundidade da caixa
 
-        -- Caixa principal
-        local box = Instance.new("BoxHandleAdornment")
-        box.Adornee = player.Character.HumanoidRootPart
-        box.Size = Vector3.new(width, height, depth) -- Tamanho da caixa ajustado
-        box.Color3 = Color3.fromRGB(0, 255, 0) -- Cor da caixa
-        box.Transparency = 0.5 -- Transparência da caixa
-        box.ZIndex = 5 -- Para garantir que seja desenhada na frente
-        box.Parent = workspace
+            -- Caixa principal
+            local box = Instance.new("BoxHandleAdornment")
+            box.Adornee = player.Character.HumanoidRootPart
+            box.Size = Vector3.new(width, height, depth) -- Tamanho da caixa ajustado
+            box.Color3 = Color3.fromRGB(0, 255, 0) -- Cor da caixa
+            box.Transparency = 0.5 -- Transparência da caixa
+            box.ZIndex = 5 -- Para garantir que seja desenhada na frente
+            box.AlwaysOnTop = true
+            box.Parent = workspace
 
-        -- Outline da caixa
-        local outline = Instance.new("BoxHandleAdornment")
-        outline.Adornee = player.Character.HumanoidRootPart
-        outline.Size = Vector3.new(width + 0.2, height + 0.2, depth + 0.2) -- Tamanho ligeiramente maior para o outline
-        outline.Color3 = Color3.fromRGB(255, 255, 255) -- Cor branca para o outline
-        outline.Transparency = 0 -- Sem transparência para o outline
-        outline.ZIndex = 4 -- Desenhar atrás da caixa principal
-        outline.Parent = workspace
+            -- Outline da caixa
+            local outline = Instance.new("BoxHandleAdornment")
+            outline.Adornee = player.Character.HumanoidRootPart
+            outline.Size = Vector3.new(width + 0.2, height + 0.2, depth + 0.2) -- Tamanho ligeiramente maior para o outline
+            outline.Color3 = Color3.fromRGB(255, 255, 255) -- Cor branca para o outline
+            outline.Transparency = 0 -- Sem transparência para o outline
+            outline.ZIndex = 4 -- Desenhar atrás da caixa principal
+            outline.AlwaysOnTop = true
+            outline.Parent = workspace
 
-        espBoxes[player.UserId] = {box, outline} -- Armazena tanto a caixa quanto o outline
+            espBoxes[player.UserId] = {box, outline} -- Armazena tanto a caixa quanto o outline
 
-        -- Atualiza a caixa se o jogador mudar de personagem
-        player.CharacterAdded:Connect(function(newCharacter)
-            if newCharacter:FindFirstChild("HumanoidRootPart") then
-                box.Adornee = newCharacter.HumanoidRootPart
-                outline.Adornee = newCharacter.HumanoidRootPart
-            end
-        end)
+            -- Atualiza a caixa se o jogador mudar de personagem
+            player.CharacterAdded:Connect(function(newCharacter)
+                if newCharacter:WaitForChild("HumanoidRootPart", 5) then
+                    box.Adornee = newCharacter.HumanoidRootPart
+                    outline.Adornee = newCharacter.HumanoidRootPart
+                end
+            end)
+        end
     end
 end
 
@@ -150,7 +154,7 @@ end)
 
 -- Adiciona ESP Box para jogadores já presentes
 for _, player in pairs(Players:GetPlayers()) do
-    if espEnabled and player ~= LocalPlayer then
+    if player.Character and espEnabled and player ~= LocalPlayer then
         createESPBox(player)
     end
 
