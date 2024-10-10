@@ -1,3 +1,13 @@
+-- Verificação do ID do jogo
+local PLACE_ID = 10449761463 -- ID do jogo "The Strongest Battlegrounds"
+
+if game.PlaceId ~= PLACE_ID then
+    warn("Este script só pode ser executado no jogo 'The Strongest Battlegrounds'.")
+    return -- Para o script se não estiver no jogo correto
+end
+
+-- O resto do seu script aqui
+
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
@@ -34,85 +44,7 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Backpack = LocalPlayer:WaitForChild("Backpack")
 
--- Armazena o estado de cada toggle para as ferramentas
-local autoEquipEnabled = {false, false, false, false}
-local tools = {} -- Tabela para armazenar as Tools
-
--- Inicializa a tabela de Tools
-for _, tool in pairs(Backpack:GetChildren()) do
-    if tool:IsA("Tool") then
-        table.insert(tools, tool) -- Adiciona o Tool à tabela
-    end
-end
-
--- Função para equipar uma ferramenta específica com base no índice
-local function equipTool(index)
-    if tools[index] and tools[index].Parent == Backpack then
-        tools[index].Parent = LocalPlayer.Character -- Equipar o Tool
-        print("Equipando Tool: " .. tools[index].Name) -- Log para depuração
-    end
-end
-
--- Função para controlar a ativação de cada Tool
-local function autoEquipTool(index)
-    while autoEquipEnabled[index] do
-        equipTool(index)
-        wait(1) -- Pausa entre ativações para evitar equipar rapidamente
-    end
-end
-
--- Toggle na aba 'Auto Farm' para cada Tool
-for i = 1, 4 do
-    local toggle = Tabs.AutoFarm:AddToggle("Auto Equip Tool " .. i, {
-        Title = "Auto Equip Tool " .. i,
-        Default = false
-    })
-
-    toggle:OnChanged(function()
-        autoEquipEnabled[i] = toggle.Value
-        if toggle.Value then
-            spawn(function() -- Inicia uma nova thread para cada Tool
-                autoEquipTool(i)
-            end)
-        else
-            autoEquipEnabled[i] = false
-        end
-    end)
-end
-
--- Atualiza a tabela de Tools caso novos itens sejam adicionados à mochila
-Backpack.ChildAdded:Connect(function(child)
-    if child:IsA("Tool") then
-        table.insert(tools, child)
-        print("Nova Tool adicionada: " .. child.Name) -- Log para depuração
-    end
-end)
-
--- Remove Tool da tabela caso o jogador a une
-Backpack.ChildRemoved:Connect(function(child)
-    for i, tool in ipairs(tools) do
-        if tool == child then
-            table.remove(tools, i)
-            print("Tool removida: " .. child.Name) -- Log para depuração
-            break
-        end
-    end
-end)
-
--- Atualiza a tabela de Tools caso o jogador perca seu personagem
-LocalPlayer.CharacterAdded:Connect(function()
-    wait(1) -- Espera para garantir que o personagem tenha carregado
-    tools = {} -- Limpa a tabela de Tools
-    for _, tool in pairs(Backpack:GetChildren()) do
-        if tool:IsA("Tool") then
-            table.insert(tools, tool) -- Adiciona o Tool à tabela
-        end
-    end
-end)
 
 -- Auto Awaken
 
