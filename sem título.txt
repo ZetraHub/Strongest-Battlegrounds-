@@ -33,43 +33,45 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
+-- Anti combo
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 
-local antiComboEnabled = true -- Ativa o anti combo por padrão
-local lastHitTime = 0 -- Armazena o tempo do último ataque recebido
-local hitCooldown = 1 -- Tempo em segundos entre hits permitidos
+local antiComboEnabled = false -- Anti combo disabled by default
+local lastHitTime = 0 -- Stores the time of the last hit received
+local hitCooldown = 1 -- Time in seconds between allowed hits
 
--- Função para aplicar o anti combo
+-- Function to apply anti combo
 local function onHit(damage)
     local currentTime = tick()
 
     if currentTime - lastHitTime < hitCooldown then
-        -- Bloqueia o dano se o hit estiver dentro do cooldown
-        return true -- Retorna verdadeiro se o hit for bloqueado
+        -- Block the damage if the hit is within cooldown
+        return true -- Returns true if the hit is blocked
     end
 
-    lastHitTime = currentTime -- Atualiza o tempo do último ataque
-    return false -- Retorna falso se o hit não foi bloqueado
+    lastHitTime = currentTime -- Updates the time of the last hit
+    return false -- Returns false if the hit is not blocked
 end
 
--- Monitora ataques do Humanoid
+-- Monitors attacks from the Humanoid
 Humanoid.HealthChanged:Connect(function(newHealth)
     if antiComboEnabled and onHit(Humanoid.Health) then
-        -- Define a saúde do jogador para o último valor antes do hit
+        -- Set the player's health to the last value before the hit
         Humanoid.Health = Humanoid.Health + (Humanoid.MaxHealth - newHealth)
     end
 end)
 
--- Toggle para ativar/desativar o anti combo
-local ToggleAntiCombo = Tabs.AutoFarm:AddToggle("Anti Combo", {
-    Title = "Ativar Anti Combo",
-    Default = true
+-- Toggle to enable/disable anti combo
+local ToggleAntiCombo = Tabs.Settings:AddToggle("Anti Combo", {
+    Title = "Enable Anti Combo",
+    Default = false -- Disabled by default
 })
 
--- Conecta o toggle para ativar/desativar a funcionalidade
+-- Connects the toggle to enable/disable functionality
 ToggleAntiCombo:OnChanged(function()
     antiComboEnabled = ToggleAntiCombo.Value
 end)
