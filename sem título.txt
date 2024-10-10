@@ -80,11 +80,18 @@ ToggleAutoCounter:OnChanged(function()
 end)
 
 -- Connect the function to enemy defeat event
--- Replace this with the actual event used in your game to detect enemy defeat.
-game.ReplicatedStorage.EnemyDefeated.OnServerEvent:Connect(onEnemyDefeated) -- Example event
+local function connectEnemyDefeatEvent()
+    local enemyDefeatEvent = game.ReplicatedStorage:FindFirstChild("EnemyDefeated") -- Replace this with your actual event
+    if enemyDefeatEvent then
+        enemyDefeatEvent.OnServerEvent:Connect(onEnemyDefeated) -- Connect to the enemy defeat event
+    end
+end
 
 -- Create the counter display
 createCounterDisplay()
+
+-- Connect the enemy defeat event when the script starts
+connectEnemyDefeatEvent()
 
 -- Toggle na aba Player para Walk Speed
 local ToggleWalkSpeed = Tabs.Player:AddToggle("Walk Speed Toggle", {
