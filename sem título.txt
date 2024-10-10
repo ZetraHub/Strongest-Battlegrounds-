@@ -33,48 +33,6 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
--- Toggle na aba Player para Walk Speed
-local ToggleWalkSpeed = Tabs.Player:AddToggle("Walk Speed Toggle", {
-    Title = "Walk Speed",
-    Default = true -- Inicialmente ativado
-})
-
-ToggleWalkSpeed:OnChanged(function()
-    walkSpeedEnabled = ToggleWalkSpeed.Value
-    adjustWalkSpeed() -- Ajusta a velocidade sempre que o toggle é alterado
-end)
-
--- Slider para ajustar a velocidade de caminhada na aba Player
-local Slider = Tabs.Player:AddSlider("Walk Speed Slider", {
-    Title = "Velocidade de Caminhada",
-    Description = "Adjust walking speed",
-    Default = 16, -- Velocidade padrão
-    Min = 0,     -- Mínimo de velocidade
-    Max = 100,   -- Máximo de velocidade
-    Rounding = 1, -- Arredondamento
-    Callback = function(Value)
-        walkSpeed = Value -- Ajusta a velocidade de caminhada para o valor do slider
-        if walkSpeedEnabled then
-            adjustWalkSpeed() -- Atualiza a velocidade se estiver ativada
-        end
-    end
-})
-
-Slider:OnChanged(function(Value)
-    print("Slider changed:", Value)
-end)
-
--- Atualiza a velocidade de caminhada ao adicionar o personagem
-LocalPlayer.CharacterAdded:Connect(function(character)
-    character:WaitForChild("Humanoid") -- Espera até que o Humanoid esteja presente
-    adjustWalkSpeed() -- Ajusta a velocidade com base no toggle
-end)
-
--- Ajusta a velocidade de caminhada se o personagem já estiver presente
-if LocalPlayer.Character then
-    adjustWalkSpeed() -- Chama a função imediatamente para garantir que a velocidade esteja definida
-end
-
 -- Anti Afk
 
 local VirtualUser = game:GetService("VirtualUser")
@@ -109,6 +67,128 @@ end)
 -- ESP
 
 local EspSection = Tabs.Visuals:AddSection("ESP")
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local tracersEnabled = false -- Inicialmente desativado
+local tracers = {} -- Tabela para armazenar os tracers
+
+-- Função para criar um tracer para um jogador
+local function createTracer(player)
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local tracer = Instance.new("LineHandleAdornment")
+        tracer.Adornee = player.Character.HumanoidRootPart
+        tracer.Length = 100 -- Ajuste a distância do tracer
+        tracer.Color3 = Color3.fromRGB(0, 255, 0) -- Cor do tracer
+        tracer.Thickness = 2 -- Espessura do tracer
+        tracer.ZIndex = 5 -- Para garantir que seja desenhado na frente
+        tracer.Parent = workspace
+        
+        tracers[player.UserId] = tracer
+
+        -- Atualiza o tracer se o jogador mudar de personagem
+        player.CharacterAdded:Connect(function(newCharacter)
+            if newCharacter:FindFirstChild("HumanoidRootPart") then
+                tracer.Adornee = newCharacter.HumanoidRootPart
+            end
+        end)
+    end
+end
+
+-- Função para remover o tracer de um jogador
+local function removeTracer(player)
+    if tracers[player.UserId] then
+        tracers[player.UserId]:Destroy()
+        tracers[player.UserId] = nil
+    end
+end
+
+-- Função para ativar/desativar os tracers
+local function toggleTracers()
+    if tracersEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                createTracer(player)
+            end
+        end
+    else
+        for _, player in pairs(Players:GetPlayers()) do
+            removeTracer(player)
+        end
+    end
+end
+
+-- Toggle na aba Visuals para Tracers
+local ToggleTracers = Tabs.Visuals:AddToggle("Tracers Toggle", {
+    Title = "Tracers",
+    Default = false
+})
+
+ToggleTracers:OnChanged(function()
+    tracersEnabled = ToggleTracers.Value
+    toggleTracers()
+end)
+
+-- Adiciona tracers para jogadores já presentes
+for _, player in pairs(Players:GetPlayers()) do
+    if tracersEnabled and player ~= LocalPlayer then
+        createTracer(player)
+    end
+
+    player.CharacterAdded:Connect(function(character)
+        if tracersEnabled then
+            createTracer(player)
+        end
+    end)
+end
+
+-- Atualiza a lista de jogadores quando eles entram ou saem
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if tracersEnabled then
+            createTracer(player)
+        end
+    end)
+end)
+
+Players.PlayerRemoving:Connect(removeTracer)
+
+-- Atualiza os tracers quando o personagem do jogador local é adicionado
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if tracersEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                createTracer(player)
+            end
+        end
+    end
+end)
+
+-- Atualiza os tracers em cada frame
+game:GetService("RunService").RenderStepped:Connect(function()
+    if tracersEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and tracers[player.UserId] then
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    tracers[player.UserId].Adornee = player.Character.HumanoidRootPart
+                else
+                    removeTracer(player) -- Remove tracer se o personagem não existir
+                end
+            end
+        end
+    end
+end)
+
+-- Atualiza os tracers quando o personagem do jogador local é adicionado
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if tracersEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                createTracer(player)
+            end
+        end
+    end
+end)
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -471,8 +551,6 @@ Tabs.AutoFarm:AddButton({
     end
 })
 
-
-
 Tabs.Info:AddParagraph({
         Title = "Script Working!",
         Content = ""
@@ -492,88 +570,6 @@ Tabs.Info:AddParagraph({
     Title = "Updates",
     Content = "- 10/10/2024"
 })
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local tracersEnabled = false -- Inicialmente desativado
-local tracers = {} -- Tabela para armazenar os tracers
-
--- Função para criar um tracer para um jogador
-local function createTracer(player)
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local tracer = Instance.new("LineHandleAdornment")
-        tracer.Adornee = player.Character.HumanoidRootPart
-        tracer.Length = 100 -- Ajuste a distância do tracer
-        tracer.Color3 = Color3.fromRGB(0, 255, 0) -- Cor do tracer
-        tracer.Thickness = 1 -- Espessura do tracer
-        tracer.Parent = workspace
-        
-        tracers[player.UserId] = tracer
-
-        -- Atualiza o tracer se o jogador mudar de personagem
-        player.CharacterAdded:Connect(function(newCharacter)
-            tracer.Adornee = newCharacter:WaitForChild("HumanoidRootPart")
-        end)
-    end
-end
-
--- Função para remover o tracer de um jogador
-local function removeTracer(player)
-    if tracers[player.UserId] then
-        tracers[player.UserId]:Destroy()
-        tracers[player.UserId] = nil
-    end
-end
-
--- Função para ativar/desativar os tracers
-local function toggleTracers()
-    if tracersEnabled then
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                createTracer(player)
-            end
-        end
-    else
-        for _, player in pairs(Players:GetPlayers()) do
-            removeTracer(player)
-        end
-    end
-end
-
--- Toggle na aba Visuals para Tracers
-local ToggleTracers = Tabs.Visuals:AddToggle("Tracers Toggle", {
-    Title = "Tracers",
-    Default = false
-})
-
-ToggleTracers:OnChanged(function()
-    tracersEnabled = ToggleTracers.Value
-    toggleTracers()
-end)
-
--- Adiciona tracers para jogadores já presentes
-for _, player in pairs(Players:GetPlayers()) do
-    if tracersEnabled and player ~= LocalPlayer then
-        createTracer(player)
-    end
-
-    player.CharacterAdded:Connect(function()
-        if tracersEnabled then
-            createTracer(player)
-        end
-    end)
-end
-
--- Atualiza a lista de jogadores quando eles entram ou saem
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        if tracersEnabled then
-            createTracer(player)
-        end
-    end)
-end)
-
-Players.PlayerRemoving:Connect(removeTracer)
     
 -- Addons:
 -- SaveManager (Allows you to have a configuration system)
@@ -607,7 +603,6 @@ Fluent:Notify({
     Content = "The script has been loaded.",
     Duration = 8
 })
-
 
 -- You can use the SaveManager:LoadAutoloadConfig() to load a config
 -- which has been marked to be one that auto loads!
