@@ -55,31 +55,10 @@ local function equipToolByIndex(index)
 end
 
 -- Funções separadas para cada Tool
-local function autoEquipTool1()
-    while autoEquipEnabled[1] do
-        equipToolByIndex(1)
-        wait(0.5) -- Pequeno atraso para evitar sobreposição
-    end
-end
-
-local function autoEquipTool2()
-    while autoEquipEnabled[2] do
-        equipToolByIndex(2)
-        wait(0.5)
-    end
-end
-
-local function autoEquipTool3()
-    while autoEquipEnabled[3] do
-        equipToolByIndex(3)
-        wait(0.5)
-    end
-end
-
-local function autoEquipTool4()
-    while autoEquipEnabled[4] do
-        equipToolByIndex(4)
-        wait(0.5)
+local function autoEquipTool(index)
+    while autoEquipEnabled[index] do
+        equipToolByIndex(index)
+        wait(1) -- Pequena pausa para cada ativação
     end
 end
 
@@ -92,7 +71,7 @@ local ToggleTool1 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 1", {
 ToggleTool1:OnChanged(function()
     autoEquipEnabled[1] = ToggleTool1.Value
     if autoEquipEnabled[1] then
-        autoEquipTool1()
+        spawn(function() autoEquipTool(1) end)
     end
 end)
 
@@ -104,7 +83,7 @@ local ToggleTool2 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 2", {
 ToggleTool2:OnChanged(function()
     autoEquipEnabled[2] = ToggleTool2.Value
     if autoEquipEnabled[2] then
-        autoEquipTool2()
+        spawn(function() autoEquipTool(2) end)
     end
 end)
 
@@ -116,7 +95,7 @@ local ToggleTool3 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 3", {
 ToggleTool3:OnChanged(function()
     autoEquipEnabled[3] = ToggleTool3.Value
     if autoEquipEnabled[3] then
-        autoEquipTool3()
+        spawn(function() autoEquipTool(3) end)
     end
 end)
 
@@ -128,7 +107,7 @@ local ToggleTool4 = Tabs.AutoFarm:AddToggle("Auto Equip Tool 4", {
 ToggleTool4:OnChanged(function()
     autoEquipEnabled[4] = ToggleTool4.Value
     if autoEquipEnabled[4] then
-        autoEquipTool4()
+        spawn(function() autoEquipTool(4) end)
     end
 end)
 
