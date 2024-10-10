@@ -38,24 +38,28 @@ local LocalPlayer = Players.LocalPlayer
 local Backpack = LocalPlayer:WaitForChild("Backpack")
 local autoActivateEnabled = false -- Estado do toggle
 
--- Função para ativar itens da mochila
-local function activateItems()
+-- Função para ativar o segundo item da mochila
+local function activateSecondItem()
     while autoActivateEnabled do
-        -- Percorre todos os itens na mochila
-        for _, item in ipairs(Backpack:GetChildren()) do
-            if item:IsA("Tool") and not item:IsDescendantOf(LocalPlayer.Character) then
-                item.Parent = LocalPlayer.Character -- Move o item para o personagem
-                item:Activate() -- Ativa o item
-                wait(1) -- Espera um segundo antes de ativar o próximo item
+        local items = Backpack:GetChildren() -- Obtém todos os itens da mochila
+
+        if #items >= 2 then -- Verifica se existem pelo menos 2 itens
+            local secondItem = items[2] -- Obtém o segundo item
+
+            if secondItem:IsA("Tool") and not secondItem:IsDescendantOf(LocalPlayer.Character) then
+                secondItem.Parent = LocalPlayer.Character -- Move o segundo item para o personagem
+                secondItem:Activate() -- Ativa o segundo item
+                wait(1) -- Espera um segundo antes de repetir
             end
         end
-        wait(1) -- Espera um segundo antes de reiniciar a ativação
+        
+        wait(1) -- Espera um segundo antes de verificar novamente
     end
 end
 
 -- Toggle na aba Auto Farm
-local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Auto Activate Items", {
-    Title = "Ativar Itens Automaticamente",
+local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Second Item", {
+    Title = "Ativar Segundo Item Automaticamente",
     Default = false
 })
 
@@ -63,7 +67,7 @@ local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Auto Activate Items", {
 ToggleActivateItems:OnChanged(function()
     autoActivateEnabled = ToggleActivateItems.Value
     if autoActivateEnabled then
-        activateItems() -- Inicia a ativação dos itens
+        activateSecondItem() -- Inicia a ativação do segundo item
     end
 end)
 
