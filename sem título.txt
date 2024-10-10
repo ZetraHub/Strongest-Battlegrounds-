@@ -39,29 +39,31 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 local autoActivateEnabled = false -- Estado do toggle
 
 -- Função para ativar o terceiro e o quarto item da mochila
-local function activateThirdAndFourthItem()
+local function activateItems()
     while autoActivateEnabled do
         local items = Backpack:GetChildren() -- Obtém todos os itens da mochila
-
+        
+        -- Ativar o terceiro item
         if #items >= 3 then -- Verifica se existem pelo menos 3 itens
             local thirdItem = items[3] -- Obtém o terceiro item
             if thirdItem:IsA("Tool") and not thirdItem:IsDescendantOf(LocalPlayer.Character) then
                 thirdItem.Parent = LocalPlayer.Character -- Move o terceiro item para o personagem
                 thirdItem:Activate() -- Ativa o terceiro item
-                wait(1) -- Espera um segundo antes de ativar o próximo item
+                wait(1.5) -- Espera 1.5 segundos antes de ativar o próximo item
             end
         end
-        
+
+        -- Ativar o quarto item
         if #items >= 4 then -- Verifica se existem pelo menos 4 itens
             local fourthItem = items[4] -- Obtém o quarto item
             if fourthItem:IsA("Tool") and not fourthItem:IsDescendantOf(LocalPlayer.Character) then
                 fourthItem.Parent = LocalPlayer.Character -- Move o quarto item para o personagem
                 fourthItem:Activate() -- Ativa o quarto item
-                wait(1) -- Espera um segundo antes de repetir
+                wait(1.5) -- Espera 1.5 segundos antes de repetir
             end
         end
-
-        wait(1) -- Espera um segundo antes de verificar novamente
+        
+        wait(1) -- Intervalo antes de repetir o processo
     end
 end
 
@@ -75,7 +77,7 @@ local ToggleActivateItems = Tabs.AutoFarm:AddToggle("Activate Third & Fourth Ite
 ToggleActivateItems:OnChanged(function()
     autoActivateEnabled = ToggleActivateItems.Value
     if autoActivateEnabled then
-        activateThirdAndFourthItem() -- Inicia a ativação do terceiro e quarto item
+        activateItems() -- Inicia a ativação do terceiro e quarto item
     end
 end)
 
