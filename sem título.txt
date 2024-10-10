@@ -103,6 +103,17 @@ Backpack.ChildRemoved:Connect(function(child)
     end
 end)
 
+-- Atualiza a tabela de Tools caso o jogador perca seu personagem
+LocalPlayer.CharacterAdded:Connect(function()
+    wait(1) -- Espera para garantir que o personagem tenha carregado
+    tools = {} -- Limpa a tabela de Tools
+    for _, tool in pairs(Backpack:GetChildren()) do
+        if tool:IsA("Tool") then
+            table.insert(tools, tool) -- Adiciona o Tool à tabela
+        end
+    end
+end)
+
 -- Auto Awaken
 
 local Players = game:GetService("Players")
